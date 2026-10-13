@@ -1,0 +1,71 @@
+{
+    "name": "pdftoolkit/pdf-images",
+    "type": "library",
+    "description": "Bounded PNG and JPEG converters into explicit PDF image objects",
+    "keywords": [
+        "pdf",
+        "object-model",
+        "php",
+        "images"
+    ],
+    "homepage": "https://github.com/PDFToolkit/pdf-images",
+    "support": {
+        "issues": "https://github.com/PDFToolkit/pdf-images/issues",
+        "source": "https://github.com/PDFToolkit/pdf-images"
+    },
+    "require": {
+        "php": "^8.3",
+        "ext-ctype": "*",
+        "ext-zlib": "*",
+        "roukmoute/pdf": "dev-master"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.0",
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^12.0"
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/PDFToolkit/pdf"
+        }
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Mathias STRASSER",
+            "email": "contact@roukmoute.fr"
+        }
+    ],
+    "minimum-stability": "stable",
+    "config": {
+        "platform": {
+            "php": "8.3.0"
+        },
+        "preferred-install": {
+            "*": "dist"
+        },
+        "sort-packages": true
+    },
+    "autoload": {
+        "psr-4": {
+            "PDF\\Images\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "PDF\\Images\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "analyse": "phpstan analyse --no-progress",
+        "format": "php-cs-fixer fix",
+        "format:check": "php-cs-fixer fix --dry-run --diff",
+        "check": [
+            "@test",
+            "@analyse",
+            "@format:check"
+        ]
+    }
+}

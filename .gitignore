@@ -1,0 +1,6 @@
+/vendor/
+/.cache/
+/_build/
+/.composer-validation.*
+/examples/*.pdf
+**/__pycache__/

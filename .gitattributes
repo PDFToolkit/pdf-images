@@ -1,0 +1,8 @@
+* text=auto eol=lf
+*.pdf binary
+*.ttf binary
+*.png binary
+*.jpg binary
+/.github export-ignore
+/.cache export-ignore
+/vendor export-ignore
