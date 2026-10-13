@@ -1,0 +1,19 @@
+# Contributor and agent instructions
+
+## Architecture
+
+- Keep external image-format parsing and conversion in this optional package.
+- Construct the core's explicit PDF image representations; keep PDF image objects in the core.
+- Use explicit objects and bounded parsing. Avoid singletons, global registries and implicit file access.
+- Do not add a production dependency from the core to this converter.
+
+## Completion and releases
+
+- Keep commits atomic, with a clear purpose and no WIP commits in the published history.
+- Release each affected package when a coherent addition, correction or documentation update has been completed and validated. Publishing the changes on `master` alone does not complete the work.
+- Follow [RELEASING.md](RELEASING.md): use independent package versions, stable dependency constraints, annotated tags and GitHub release notes.
+- The initial publication of the optional packages has one bootstrap exception: the core may temporarily lock their validated development snapshots. Follow the sequence in RELEASING.md and publish the core stabilization patch with released module dependencies before completing that work. Module production dependencies must remain stable throughout.
+- Before tagging, require successful checks for the exact candidate commit on PHP 8.3, 8.4 and 8.5, including the repository's independent PDF validations.
+- Do not rewrite a published tag or edit an old release to include new changes. Publish a new version instead.
+- Update the shared documentation in `PDFToolkit/pdf` when the image API changes; lock its image dependency to a published version and link to the tagged source commit.
+- Report the versions and release links when the work is complete.

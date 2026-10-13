@@ -11,16 +11,19 @@ Une application qui génère ses propres échantillons peut utiliser le core seu
 
 ## Installation
 
-Les packages sont disponibles sur leur branche de développement. Dans le projet
-consommateur, déclarez les deux dépôts et les deux exigences explicitement :
+Les packages ne sont pas encore publiés sur Packagist. Dans le projet
+consommateur, déclarez les deux dépôts VCS : Composer ne reprend pas les dépôts
+configurés dans les dépendances.
 
 ```sh
 composer config repositories.pdf vcs https://github.com/PDFToolkit/pdf
 composer config repositories.pdf-images vcs https://github.com/PDFToolkit/pdf-images
-composer require roukmoute/pdf:dev-master pdftoolkit/pdf-images:dev-master
+composer require "pdftoolkit/pdf-images:^0.1"
 ```
 
-Le package dépend du core ; installer le core seul n’installe aucun convertisseur.
+Le module utilise le core `roukmoute/pdf:^0.2`, installé automatiquement par
+Composer. Le fichier `composer.lock` du projet consommateur fixe les versions
+et les révisions utilisées. Installer le core seul n’installe aucun convertisseur.
 La documentation commune est sur [PDFToolkit](https://pdftoolkit.github.io/pdf/).
 
 ## Construction explicite
@@ -92,3 +95,5 @@ au développement ; le package PHP ne dépend pas de Pillow ou de GD.
 ```sh
 php examples/image-files.php output.pdf
 ```
+
+Consulter le [changelog](CHANGELOG.md) et la [politique de sécurité](SECURITY.md).

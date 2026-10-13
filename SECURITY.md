@@ -9,4 +9,10 @@ Invalid and unsupported inputs are rejected explicitly; the documented tests ver
 Configure limits for the workload and apply memory and execution-time quotas at the application boundary.
 Passing this suite does not establish the absence of every possible vulnerability.
 
-The development branch supports PHP 8.3, 8.4 and 8.5.
+## Supported versions
+
+The `0.1.x` series receives security fixes. PHP 8.3 or newer is required;
+CI checks PHP 8.3, 8.4 and 8.5. Use a maintained PHP version with its security
+updates.
+
+The shared PDF model has its own [security policy](https://github.com/PDFToolkit/pdf/blob/master/SECURITY.md).
