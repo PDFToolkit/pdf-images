@@ -21,7 +21,7 @@ composer config repositories.pdf-images vcs https://github.com/PDFToolkit/pdf-im
 composer require "pdftoolkit/pdf-images:^0.1"
 ```
 
-Le module utilise le core `roukmoute/pdf:^0.2`, installé automatiquement par
+Le module utilise le core `roukmoute/pdf:^0.2 || ^0.3`, installé automatiquement par
 Composer. Le fichier `composer.lock` du projet consommateur fixe les versions
 et les révisions utilisées. Installer le core seul n’installe aucun convertisseur.
 La documentation commune est sur [PDFToolkit](https://pdftoolkit.github.io/pdf/).
