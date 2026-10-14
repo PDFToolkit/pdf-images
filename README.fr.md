@@ -21,7 +21,7 @@ consommateur :
 composer require "pdftoolkit/pdf-images:^0.1"
 ```
 
-Le module utilise le core `roukmoute/pdf:^0.2 || ^0.3 || ^0.4 || ^0.5`,
+Le module utilise le core `roukmoute/pdf:^0.2 || ^0.3 || ^0.4 || ^0.5 || ^0.6`,
 installé automatiquement par Composer. PHP 8.3 ou supérieur sur une plateforme
 64 bits et les extensions `ctype`, `iconv` et `zlib` sont requis pour cet ensemble.
 Le fichier `composer.lock` du projet
@@ -30,6 +30,10 @@ n’installe aucun convertisseur.
 La documentation commune est sur [PDFToolkit](https://pdftoolkit.github.io/fr/).
 La [documentation du module images](https://pdftoolkit.github.io/fr/modules/images/)
 présente ses guides et sa référence API.
+
+Les mêmes convertisseurs sont compatibles avec le core 0.6. La sélection de
+la version PDF de sortie et la validation des exigences des fonctionnalités
+PDF 2.0 appartiennent au writer du core.
 
 ## Construction explicite
 
