@@ -2,6 +2,10 @@
 
 English | [Français](fr/architecture.md)
 
+Version 0.1.8 accepts core 0.7 alongside earlier supported releases. PNG/JPEG
+conversion remains separate from PDF 2.0 metadata, tagging and cryptographic
+mechanisms, which the application composes using core objects.
+
 The package adds no PDF structures and does not modify the writer. It
 converts bytes from external formats into core values.
 
