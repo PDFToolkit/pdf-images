@@ -11,18 +11,18 @@ Une application qui génère ses propres échantillons peut utiliser le core seu
 
 ## Installation
 
-Les packages ne sont pas encore publiés sur Packagist. Dans le projet
-consommateur, déclarez les deux dépôts VCS : Composer ne reprend pas les dépôts
-configurés dans les dépendances.
+Le package est disponible sur
+[Packagist](https://packagist.org/packages/pdftoolkit/pdf-images). Dans le projet
+consommateur :
 
 ```sh
-composer config repositories.pdf vcs https://github.com/PDFToolkit/pdf
-composer config repositories.pdf-images vcs https://github.com/PDFToolkit/pdf-images
 composer require "pdftoolkit/pdf-images:^0.1"
 ```
 
 Le module utilise le core `roukmoute/pdf:^0.2 || ^0.3 || ^0.4 || ^0.5`,
-installé automatiquement par Composer. Le fichier `composer.lock` du projet
+installé automatiquement par Composer. PHP 8.3 ou supérieur sur une plateforme
+64 bits et les extensions `ctype`, `iconv` et `zlib` sont requis pour cet ensemble.
+Le fichier `composer.lock` du projet
 consommateur fixe les versions et les révisions utilisées. Installer le core seul
 n’installe aucun convertisseur.
 La documentation commune est sur [PDFToolkit](https://pdftoolkit.github.io/).
