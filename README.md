@@ -1,35 +1,36 @@
 # PDFToolkit Images
 
-Convertisseurs optionnels de fichiers PNG et JPEG vers les objets image PDF de
-[PDFToolkit Core](https://github.com/PDFToolkit/pdf), pour PHP 8.3 à 8.5.
+English | [Français](README.fr.md)
 
-Le core représente les images PDF, leurs espaces de couleur, les échantillons,
-le filtre `/DCTDecode` et les masques de transparence décrits par ISO 32000-1.
-Ce package interprète les formats de fichiers externes : chunks et CRC PNG,
-scanlines, palettes, marqueurs JPEG et composantes de leurs trames.
-Une application qui génère ses propres échantillons peut utiliser le core seul.
+Optional PNG and JPEG file converters for the PDF image objects in
+[PDFToolkit Core](https://github.com/PDFToolkit/pdf), for PHP 8.3 to 8.5.
+
+The core represents PDF images, their colour spaces, samples, the `/DCTDecode`
+filter and transparency masks described by ISO 32000-1. This package interprets
+external file formats: PNG chunks and CRCs, scanlines, palettes, JPEG markers
+and frame components. An application that produces its own samples can use
+the core alone.
 
 ## Installation
 
-Le package est disponible sur
-[Packagist](https://packagist.org/packages/pdftoolkit/pdf-images). Dans le projet
-consommateur :
+The package is available on
+[Packagist](https://packagist.org/packages/pdftoolkit/pdf-images). In your
+application:
 
 ```sh
 composer require "pdftoolkit/pdf-images:^0.1"
 ```
 
-Le module utilise le core `roukmoute/pdf:^0.2 || ^0.3 || ^0.4 || ^0.5`,
-installé automatiquement par Composer. PHP 8.3 ou supérieur sur une plateforme
-64 bits et les extensions `ctype`, `iconv` et `zlib` sont requis pour cet ensemble.
-Le fichier `composer.lock` du projet
-consommateur fixe les versions et les révisions utilisées. Installer le core seul
-n’installe aucun convertisseur.
-La documentation commune est sur [PDFToolkit](https://pdftoolkit.github.io/).
-La [documentation du module images](https://pdftoolkit.github.io/modules/images/)
-présente ses guides et sa référence API.
+The module uses `roukmoute/pdf:^0.2 || ^0.3 || ^0.4 || ^0.5`, installed
+automatically by Composer. PHP 8.3 or newer on a 64-bit platform and the `ctype`,
+`iconv` and `zlib` extensions are required for this combination. The application's
+`composer.lock` records the selected versions and revisions. Installing the
+core alone does not install any converters.
+Shared documentation is available at [PDFToolkit](https://pdftoolkit.github.io/).
+The [image module documentation](https://pdftoolkit.github.io/modules/images/)
+contains its guides and API reference.
 
-## Construction explicite
+## Explicit construction
 
 ```php
 use PDF\Document\Images\ImageXObjectFactory;
@@ -38,11 +39,11 @@ use PDF\Images\ImageImportLimits;
 use PDF\Images\JpegImageReader;
 use PDF\Images\PngImageDecoder;
 
-// L'application obtient les octets. Aucun importeur n'ouvre de chemin ou d'URL.
+// The application supplies bytes. No importer opens a path or URL.
 $pngFile = new ImageFileBytes($pngBytes);
 $jpegFile = new ImageFileBytes($jpegBytes);
 
-// Chaque instance possède ses propres limites, adaptées à l'application.
+// Each instance has its own limits, chosen for the application.
 $limits = new ImageImportLimits(
     maxEncodedBytes: 1_048_576,
     maxDecodedBytes: 4_194_304,
@@ -50,53 +51,51 @@ $limits = new ImageImportLimits(
     maxDimension: 2048,
 );
 
-// Le PNG devient un SampledImage du core : couleurs et alpha séparés.
+// PNG becomes a core SampledImage: colour and alpha are separate.
 $samples = (new PngImageDecoder($limits))->decode($pngFile);
 
-// Le JPEG devient un DCTImage du core : données encodées et paramètres PDF.
+// JPEG becomes a core DCTImage: encoded data and PDF parameters.
 $dct = (new JpegImageReader($limits))->read($jpegFile);
 
-// Le core compose ensuite les flux /Subtype /Image de la table 89.
+// The core composes the /Subtype /Image streams from table 89.
 $factory = new ImageXObjectFactory();
 $pngObject = $factory->create($samples);
 $jpegObject = $factory->create($dct);
 ```
 
-Ces flux se placent explicitement dans les ressources `/XObject` d'une page,
-puis se peignent avec un opérateur `InvokeXObject` et une matrice.
-Le masque alpha est un autre objet image PDF en niveaux de gris, référencé
-par `/SMask`. Les octets JPEG restent intacts avec le filtre `/DCTDecode`.
-Le writer et le graphe de document appartiennent au core ; les convertisseurs
-n'ont pas de singleton, de registre global ou de façade qui assemble une page.
+Add these streams explicitly to a page's `/XObject` resources, then paint them
+with an `InvokeXObject` operator and a matrix. The alpha mask is another
+greyscale PDF image object, referenced by `/SMask`. JPEG bytes remain unchanged
+with the `/DCTDecode` filter. The writer and document graph belong to the core;
+the converters have no singleton, global registry or page-building facade.
 
-## Formats pris en charge
+## Supported formats
 
-- PNG statique, non entrelacé, huit bits par composante : gris, RGB, palette,
-  gris avec alpha et RGBA. Les cinq filtres de scanline sont reconstruits.
-  Les palettes sont développées en RGB ; `tRNS` devient un masque alpha.
-- JPEG Huffman DCT, baseline ou progressif, huit bits par composante : gris,
-  RGB et CMYK Adobe avec transformée zéro. Les tables, trames et marqueurs
-  nécessaires sont contrôlés ; le lecteur PDF décode les coefficients DCT.
+- Static, non-interlaced PNG with eight bits per component: greyscale, RGB,
+  palette, greyscale with alpha and RGBA. All five scanline filters are
+  reconstructed. Palettes are expanded to RGB; `tRNS` becomes an alpha mask.
+- Baseline or progressive Huffman DCT JPEG with eight bits per component:
+  greyscale, RGB and Adobe CMYK with transform zero. Required tables, frames
+  and markers are checked; the PDF viewer decodes the DCT coefficients.
 
-Les PNG animés, entrelacés et d'autres profondeurs, les profils ICC intégrés,
-les JPEG YCCK et les sémantiques couleur ambiguës sont rejetés explicitement.
-Les métadonnées EXIF ne produisent pas de rotation automatique. Les informations
-PNG de gamma ou de chromaticité ne créent pas d'espace couleur calibré.
+Animated or interlaced PNGs, other bit depths, embedded ICC profiles, YCCK JPEGs
+and ambiguous colour semantics are explicitly rejected. EXIF metadata does
+not cause automatic rotation. PNG gamma or chromaticity information does not
+create a calibrated colour space.
 
-## Contrôles et exemples
+## Checks and examples
 
-La suite vérifie les échantillons et l'alpha attendus, la conservation des
-octets JPEG, les flux PDF obtenus, les CRC, les troncatures et les limites
-de dimensions, de chunks et de décompression.
-Les [contrats et limites](docs/architecture.md) détaillent chaque objet.
+The suite verifies expected samples and alpha, preserved JPEG bytes, generated
+PDF streams, CRCs, truncation and dimension, chunk and decompression limits.
+The [contracts and limits](docs/architecture.md) describe each object.
 
-[L'exemple complet](examples/image-files.php) construit une page avec quatre
-images et des damiers qui rendent leur transparence visible. Ses motifs sont
-originaux et distribués sous licence MIT. Leur générateur Pillow sert uniquement
-au développement ; le package PHP ne dépend pas de Pillow ou de GD.
+The [complete example](examples/image-files.php) builds a page containing four
+images and checkerboards that reveal transparency. Its original patterns are
+distributed under the MIT licence. Their Pillow generator is used only for
+development; the PHP package does not depend on Pillow or GD.
 
 ```sh
 php examples/image-files.php output.pdf
 ```
 
-Consulter le [changelog](CHANGELOG.md) et la [politique de sécurité](SECURITY.md).
+See the [changelog](CHANGELOG.md) and [security policy](SECURITY.md).

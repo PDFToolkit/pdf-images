@@ -44,9 +44,9 @@ use PDF\Syntax\Object\StringObject\LiteralString;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
-// 1. L'application choisit quatre fichiers locaux connus. Les importeurs
-//    reçoivent seulement des objets d'octets : aucun chemin ou URL ne leur
-//    permet d'ouvrir une ressource. Les motifs du dépôt sont sous licence MIT.
+// 1. The application chooses four known local files. Importers receive only
+//    byte objects: no path or URL lets them open a resource.
+//    The repository's original patterns are distributed under the MIT licence.
 $files = [];
 foreach (['rgb.jpg', 'rgba.png', 'cmyk.jpg', 'palette.png'] as $filename) {
     $bytes = file_get_contents(__DIR__ . '/assets/images/' . $filename);
@@ -56,8 +56,8 @@ foreach (['rgb.jpg', 'rgba.png', 'cmyk.jpg', 'palette.png'] as $filename) {
     $files[$filename] = new ImageFileBytes($bytes);
 }
 
-// 2. Ces limites bornent les données encodées, pixels et scanlines décodées.
-//    Elles se configurent par objet, par exemple pour une route de téléversement.
+// 2. These limits bound encoded data, pixels and decoded scanlines.
+//    Configure them per object, for example for an upload endpoint.
 $limits = new ImageImportLimits(
     maxEncodedBytes: 1_048_576,
     maxDecodedBytes: 1_048_576,
@@ -71,10 +71,10 @@ $rgba = $pngDecoder->decode($files['rgba.png']);
 $cmyk = $jpegReader->read($files['cmyk.jpg']);
 $palette = $pngDecoder->decode($files['palette.png']);
 
-// 3. La composition fabrique les flux /Subtype /Image de la table 89.
-//    Le JPEG reste DCTDecode, octet pour octet. Le PNG est reconstruit puis
-//    compressé avec FlateDecode ; son alpha devient un autre flux /SMask.
-//    Les références du masque sont découvertes par le graphe du writer.
+// 3. Composition builds the /Subtype /Image streams from table 89.
+//    JPEG remains DCTDecode, byte for byte. PNG is reconstructed, then
+//    compressed with FlateDecode; its alpha becomes a separate /SMask stream.
+//    The writer's graph discovers the mask references.
 $factory = new ImageXObjectFactory();
 $images = [
     'JpegRGB' => $factory->create($rgb),
@@ -104,9 +104,9 @@ $operators = [
     new EndTextObject(),
 ];
 
-// 4. Chaque image PDF occupe le carré unité. La matrice explicite produit
-//    le rectangle 216 × 162, puis le translate ; aucun placement automatique.
-//    Un damier derrière les images révèle les canaux alpha des deux PNG.
+// 4. Each PDF image occupies the unit square. The explicit matrix creates
+//    the 216 × 162 rectangle, then translates it; there is no automatic placement.
+//    A checkerboard behind the images reveals the two PNGs' alpha channels.
 $panels = [
     ['JpegRGB', 52, 452, 'JPEG RGB', 'DCTDecode : les octets JPEG restent intacts.', 'Trois composantes, transformation YCbCr.'],
     ['PngRGBA', 328, 452, 'PNG avec alpha', 'FlateDecode + /SMask en niveaux de gris.', 'L\'opacite augmente de gauche a droite.'],
@@ -147,8 +147,8 @@ foreach ($panels as [$name, $x, $y, $title, $line1, $line2]) {
     $operators[] = new EndTextObject();
 }
 
-// 5. Le graphe de document reste celui des tutoriels précédents : ressources,
-//    contenu, page, arbre des pages et catalogue, tous comme objets explicites.
+// 5. The document graph follows earlier tutorials: resources, contents, page,
+//    page tree and catalog are all explicit objects.
 $contents = new StreamObject(new ContentStreams(...$operators));
 $page = new PageObject(
     new Rectangle(new NumericType(0), new NumericType(0), new NumericType(612), new NumericType(792)),

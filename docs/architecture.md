@@ -1,54 +1,55 @@
-# Contrats des convertisseurs d'images
+# Image converter contracts
 
-Le package ne représente aucune structure PDF supplémentaire et ne modifie
-pas le writer. Il transforme des octets de formats externes en valeurs du core.
+English | [Français](fr/architecture.md)
 
-| Objet | Responsabilité |
+The package adds no PDF structures and does not modify the writer. It
+converts bytes from external formats into core values.
+
+| Object | Responsibility |
 | --- | --- |
-| `PDF\Images\ImageFileBytes` | Porte les octets fournis par l'application, sans accès aux fichiers ou au réseau. |
-| `PDF\Images\ImageImportLimits` | Borne les données encodées, les échantillons décodés, les pixels, les dimensions et le nombre de chunks ou de marqueurs. |
-| `PDF\Images\JpegImageReader` | Interprète les marqueurs, tables, trames et composantes JPEG pris en charge ; retourne un `PDF\Document\Images\DCTImage`. |
-| `PDF\Images\JpegFrame` et `JpegComponent` | Représentent la trame JPEG inspectée et ses composantes. |
-| `PDF\Images\PngImageDecoder` | Vérifie la structure PNG et reconstruit couleurs et alpha ; retourne un `PDF\Document\Images\SampledImage`. |
-| `PDF\Images\PngChunk` | Valide le nom et le CRC d'un chunk. |
-| `PDF\Images\PngColorType` | Représente les codes couleur PNG, distincts des espaces de couleur PDF. |
-| `PDF\Images\PngScanlineDecoder` | Reconstruit les cinq filtres PNG sur des échantillons alignés sur l'octet. |
+| `PDF\Images\ImageFileBytes` | Carries bytes supplied by the application, without file or network access. |
+| `PDF\Images\ImageImportLimits` | Bounds encoded data, decoded samples, pixels, dimensions and chunk or marker counts. |
+| `PDF\Images\JpegImageReader` | Interprets supported JPEG markers, tables, frames and components; returns a `PDF\Document\Images\DCTImage`. |
+| `PDF\Images\JpegFrame` and `JpegComponent` | Represent the inspected JPEG frame and its components. |
+| `PDF\Images\PngImageDecoder` | Validates PNG structure and reconstructs colour and alpha; returns a `PDF\Document\Images\SampledImage`. |
+| `PDF\Images\PngChunk` | Validates a chunk's name and CRC. |
+| `PDF\Images\PngColorType` | Represents PNG colour codes, separate from PDF colour spaces. |
+| `PDF\Images\PngScanlineDecoder` | Reconstructs all five PNG filters on byte-aligned samples. |
 
-Le résultat est ensuite donné à `PDF\Document\Images\ImageXObjectFactory`.
-Ce compositeur du core accepte aussi des échantillons ou des données DCT
-produits autrement. Il n'inspecte ni signature PNG ni marqueur JPEG.
+The result is then passed to `PDF\Document\Images\ImageXObjectFactory`.
+This core composer also accepts samples or DCT data produced by other means.
+It does not inspect PNG signatures or JPEG markers.
 
-## Traitement PNG
+## PNG processing
 
-1. La signature, l'ordre et les tailles des chunks ainsi que chaque CRC sont
-   contrôlés avant interprétation.
-2. L'en-tête est confronté aux limites avant allocation des scanlines.
-3. L'inflation zlib consomme des fragments comprimés de 64 octets et rejette
-   les données dépassant la taille attendue, tronquées ou suivies de données.
-4. Les filtres sont inversés, puis les indices de palette développés et les
-   échantillons alpha séparés.
-5. Le core reçoit les échantillons et choisit leur encodage PDF avec FlateDecode.
+1. The signature, chunk order and sizes, and every CRC are checked before
+   interpretation.
+2. The header is checked against the limits before scanlines are allocated.
+3. zlib inflation consumes 64-byte compressed fragments and rejects data that
+   exceeds the expected size, is truncated or has trailing data.
+4. Filters are reversed, palette indices are expanded, and alpha samples are
+   separated.
+5. The core receives the samples and selects their PDF encoding with FlateDecode.
 
-Les limites par défaut sont 16 MiB encodés, 16 MiB décodés, 4 194 304 pixels,
-32 768 pixels par dimension et 65 536 chunks. Elles sont des limites par image ;
-l'application fixe également ses budgets de requête et son nombre d'images.
+Default limits are 16 MiB encoded, 16 MiB decoded, 4,194,304 pixels, 32,768
+pixels per dimension and 65,536 chunks. These limits apply to each image;
+the application also sets request budgets and an image count limit.
 
-## Traitement JPEG
+## JPEG processing
 
-Le lecteur conserve les octets originaux. Il contrôle les bornes des segments,
-les tables de quantification et Huffman, les composantes, les paramètres de
-scan et la présence de la fin de fichier. Il détermine les paramètres PDF
-`/ColorSpace`, `/ColorTransform` et, pour le CMYK Adobe inversé, `/Decode`.
+The reader preserves the original bytes. It checks segment bounds,
+quantisation and Huffman tables, components, scan parameters and the end-of-file
+marker. It determines PDF `/ColorSpace` and `/ColorTransform` parameters and,
+for inverted Adobe CMYK, `/Decode`.
 
-Il n'exécute pas le décodage entropique et ne prétend donc pas vérifier chaque
-coefficient DCT. Le décodeur JPEG du lecteur PDF reste responsable du rendu.
-Les données ambiguës ou les encodages non pris en charge sont refusés.
+It does not perform entropy decoding and therefore does not claim to validate
+every DCT coefficient. The PDF viewer's JPEG decoder remains responsible for
+rendering. Ambiguous data and unsupported encodings are rejected.
 
-## Intégration
+## Integration
 
-Les convertisseurs et les valeurs retournées sont des objets construits
-explicitement. Ils n'ouvrent jamais un chemin ni une URL et n'ajoutent pas
-d'images à une page. La ressource `/XObject`, la référence indirecte, la
-matrice de placement et l'opérateur `Do` restent des objets du core choisis
-par l'application. Le package est optionnel pour une génération à partir
-d'échantillons déjà disponibles.
+Converters and returned values are explicitly constructed objects. They never
+open a path or URL and do not add images to a page. The `/XObject` resource,
+indirect reference, placement matrix and `Do` operator remain core objects
+chosen by the application. The package is optional when generating from
+samples that are already available.

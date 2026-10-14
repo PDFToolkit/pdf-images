@@ -1,15 +1,18 @@
-# Images synthétiques
+# Synthetic images
 
-Ces motifs sont créés pour ce dépôt : aucune photographie, aucun logo, aucune image externe.
-Ils sont distribués sous la même licence MIT que le code. `generate.py` les reconstruit avec
-Pillow, utilisé uniquement lors du développement ; la bibliothèque PHP n'en dépend pas.
+English | [Français](README.fr.md)
 
-- `rgb.png` et `rgb.jpg` : motif original de 48 × 36 pixels, quatre couleurs.
-- `progressive.jpg` : même motif avec codage JPEG progressif.
-- `gray.png` et `gray.jpg` : rampe de gris diagonale.
-- `rgba.png` : motif RGB avec opacité de gauche à droite.
-- `gray-alpha.png` : rampe de gris avec opacité de haut en bas.
-- `palette.png` : quatre indices de palette avec les opacités 0, 85, 170 et 255.
-- `cmyk.jpg` : conversion CMYK du motif, avec le marqueur Adobe du codec Pillow.
+These patterns were created for this repository: no photograph, logo or external
+image is used. They are distributed under the same MIT licence as the code.
+`generate.py` rebuilds them with Pillow, used only during development; the PHP
+library does not depend on it.
 
-Les différences de pixels JPEG sont attendues : son codage DCT est avec perte.
+- `rgb.png` and `rgb.jpg`: original 48 × 36 pixel pattern with four colours.
+- `progressive.jpg`: same pattern with progressive JPEG encoding.
+- `gray.png` and `gray.jpg`: diagonal greyscale ramp.
+- `rgba.png`: RGB pattern with opacity from left to right.
+- `gray-alpha.png`: greyscale ramp with opacity from top to bottom.
+- `palette.png`: four palette indices with opacity values 0, 85, 170 and 255.
+- `cmyk.jpg`: CMYK conversion of the pattern, with the Pillow codec's Adobe marker.
+
+JPEG pixel differences are expected: its DCT encoding is lossy.

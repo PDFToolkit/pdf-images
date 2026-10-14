@@ -1,5 +1,7 @@
 # Security policy
 
+English | [Français](SECURITY.fr.md)
+
 Report a vulnerability privately through [GitHub Security Advisories](https://github.com/PDFToolkit/pdf-images/security/advisories/new).
 Include the affected commit, a minimal input, configured limits and observed result.
 
