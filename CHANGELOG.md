@@ -4,6 +4,13 @@ English | [Français](CHANGELOG.fr.md)
 
 ## Unreleased
 
+## 0.1.9 - 2026-10-15
+
+- Accept stable core ^0.8 while retaining the previously supported releases.
+- Lock validation to published core 0.7.1; verify compatibility with the core 0.8 candidate and retain the existing converter API and bounded parsing.
+- Update installation documentation in English and French; PHP 8.3–8.5.
+
+
 ## 0.1.8 — 2026-10-14
 
 ### Compatibility and scope

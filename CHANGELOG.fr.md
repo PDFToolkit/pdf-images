@@ -4,6 +4,13 @@
 
 ## Unreleased
 
+## 0.1.9 - 2026-10-15
+
+- Accepter le core stable ^0.8 en conservant les versions précédemment prises en charge.
+- Verrouiller la validation sur le core publié 0.7.1 ; vérifier la compatibilité avec le candidat core 0.8 et conserver l’API de conversion et l’analyse bornée.
+- Mettre à jour l’installation en français et en anglais ; PHP 8.3–8.5.
+
+
 ## 0.1.8 — 2026-10-14
 
 ### Compatibilité et périmètre
