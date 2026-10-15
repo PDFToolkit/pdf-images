@@ -21,7 +21,7 @@ application:
 composer require "pdftoolkit/pdf-images:^0.1"
 ```
 
-The module uses `roukmoute/pdf:^0.2 || ^0.3 || ^0.4 || ^0.5 || ^0.6 || ^0.7 || ^0.8 || ^0.9`, installed
+The module uses `roukmoute/pdf:^0.2 || ^0.3 || ^0.4 || ^0.5 || ^0.6 || ^0.7 || ^0.8 || ^0.9 || ^0.10`, installed
 automatically by Composer. PHP 8.3 or newer on a 64-bit platform and the `ctype`,
 `iconv` and `zlib` extensions are required for this combination. The application's
 `composer.lock` records the selected versions and revisions. Installing the
@@ -30,7 +30,7 @@ Shared documentation is available at [PDFToolkit](https://pdftoolkit.github.io/)
 The [image module documentation](https://pdftoolkit.github.io/modules/images/)
 contains its guides and API reference.
 
-The same converters are compatible with core 0.6, 0.7, 0.8 and 0.9. PNG/JPEG conversion
+The same converters are compatible with core 0.6, 0.7, 0.8, 0.9 and 0.10. PNG/JPEG conversion
 keeps its existing scope. Selecting the output version and supplying PDF 2.0
 metadata, tagging or security objects belong to the core writer.
 
