@@ -4,6 +4,12 @@
 
 ## Unreleased
 
+## 0.1.12 - 2026-10-15
+
+- Accepter le core stable `^0.11` avec les séries précédemment prises en charge.
+- Valider avec le core publié `0.10.0`, en conservant les versions et références de tous les autres paquets verrouillés.
+- Conserver les API de conversion, l’analyse bornée et les exigences PHP ; maintenir la documentation de compatibilité FR/EN.
+
 ## 0.1.11 - 2026-10-15
 
 - Accepter le core stable `^0.10` en conservant les séries précédemment prises en charge.

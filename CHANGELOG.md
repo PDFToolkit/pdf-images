@@ -4,6 +4,12 @@ English | [Français](CHANGELOG.fr.md)
 
 ## Unreleased
 
+## 0.1.12 - 2026-10-15
+
+- Accept stable core `^0.11` alongside the previous supported series.
+- Validate against published core `0.10.0`, preserving every other locked package version and source reference.
+- Keep converter APIs, bounded parsing and PHP requirements unchanged; maintain English/French compatibility documentation.
+
 ## 0.1.11 - 2026-10-15
 
 - Accept stable core `^0.10` while retaining the previously supported core series.

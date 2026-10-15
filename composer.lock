@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "50c991517488cc8d419178eea0d135d7",
+    "content-hash": "911bf557aa3d388e29993d7bcc08d393",
     "packages": [
         {
             "name": "roukmoute/pdf",
-            "version": "v0.7.1",
+            "version": "v0.10.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/PDFToolkit/pdf.git",
-                "reference": "f27dc57dfb69553d180153ae81209b2f1e8cb418"
+                "reference": "3d5777ca3cc32e65a152ab080263b0cc5a6291ac"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/PDFToolkit/pdf/zipball/f27dc57dfb69553d180153ae81209b2f1e8cb418",
-                "reference": "f27dc57dfb69553d180153ae81209b2f1e8cb418",
+                "url": "https://api.github.com/repos/PDFToolkit/pdf/zipball/3d5777ca3cc32e65a152ab080263b0cc5a6291ac",
+                "reference": "3d5777ca3cc32e65a152ab080263b0cc5a6291ac",
                 "shasum": ""
             },
             "require": {
@@ -29,19 +29,20 @@
             },
             "require-dev": {
                 "friendsofphp/php-cs-fixer": "^3.0",
-                "pdftoolkit/pdf-fonts": "^0.1.8",
-                "pdftoolkit/pdf-images": "^0.1.8",
-                "pdftoolkit/pdf-reader": "^0.1.9",
+                "pdftoolkit/pdf-fonts": "^0.1.11",
+                "pdftoolkit/pdf-images": "^0.1.11",
+                "pdftoolkit/pdf-reader": "^0.5.1",
                 "phpstan/phpstan": "^2.1",
                 "phpunit/phpunit": "^12.0"
             },
             "suggest": {
+                "ext-dom": "Required only for the explicitly selected WtPdfXmlRichTextParser backend.",
                 "ext-openssl": "Required only for explicitly selected AES and CMS encryption or signature backends."
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "0.7.x-dev"
+                    "dev-master": "0.10.x-dev"
                 }
             },
             "autoload": {
@@ -59,7 +60,7 @@
                     "email": "contact@roukmoute.fr"
                 }
             ],
-            "description": "Explicit PDF 1.7 and PDF 2.0 objects and writing, with modern signatures, AES-GCM, PDF MAC, metadata and tagged-structure validation",
+            "description": "Explicit PDF 1.7/2.0 objects and writing with executable specification rules, conservative redaction, signatures, encryption and tagged-structure validation",
             "homepage": "https://pdftoolkit.github.io/modules/core/",
             "keywords": [
                 "AES-GCM",
@@ -79,7 +80,7 @@
                 "issues": "https://github.com/PDFToolkit/pdf/issues",
                 "source": "https://github.com/PDFToolkit/pdf"
             },
-            "time": "2026-10-14T16:56:10+00:00"
+            "time": "2026-10-15T17:03:31+00:00"
         }
     ],
     "packages-dev": [
