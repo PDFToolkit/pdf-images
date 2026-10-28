@@ -4,6 +4,12 @@
 
 ## Unreleased
 
+## 0.1.13 - 2026-10-28
+
+- Accepter le core stable `^0.12` avec les séries précédemment prises en charge.
+- Conserver les API du convertisseur et les dépendances de validation publiées. Vérifier séparément le convertisseur existant avec le candidat core 0.12 sous PHP 8.3, 8.4 et 8.5.
+- Cette maintenance permet des dépendances de développement stables pour le core avant la version fonctionnelle indépendante Images 0.2.
+
 ## 0.1.12 - 2026-10-15
 
 - Accepter le core stable `^0.11` avec les séries précédemment prises en charge.
