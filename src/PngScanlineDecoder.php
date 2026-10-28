@@ -6,16 +6,18 @@ namespace PDF\Images;
 
 use PDF\Document\Images\ImageDimensions;
 
-/** Reconstructs the five PNG scanline filters for byte-aligned samples. */
+/** Reconstructs PNG filters on bytes, including packed samples and 16-bit components. */
 final readonly class PngScanlineDecoder
 {
-    public function decode(string $filtered, ImageDimensions $dimensions, PngColorType $colorType): string
+    public function decode(string $filtered, ImageDimensions $dimensions, PngColorType $colorType, int $depth = 8): string
     {
         $components = $colorType->components();
-        if ($dimensions->width > intdiv(PHP_INT_MAX - 1, $components)) {
+        if (!in_array($depth, [1, 2, 4, 8, 16], true)
+            || $dimensions->width > intdiv(PHP_INT_MAX - 7, $components * $depth)) {
             throw new \InvalidArgumentException('PNG scanline length exceeds the integer range.');
         }
-        $rowBytes = $dimensions->width * $components;
+        $rowBytes = intdiv($dimensions->width * $components * $depth + 7, 8);
+        $stride = max(1, intdiv($components * $depth + 7, 8));
         if ($dimensions->height > intdiv(PHP_INT_MAX, $rowBytes + 1)
             || strlen($filtered) !== ($rowBytes + 1) * $dimensions->height) {
             throw new \InvalidArgumentException('PNG scanline length does not match its dimensions.');
@@ -31,9 +33,9 @@ final readonly class PngScanlineDecoder
             $row = substr($filtered, $offset, $rowBytes);
             $offset += $rowBytes;
             for ($index = 0; $index < $rowBytes; ++$index) {
-                $left = $index < $components ? 0 : ord($row[$index - $components]);
+                $left = $index < $stride ? 0 : ord($row[$index - $stride]);
                 $above = ord($previous[$index]);
-                $upperLeft = $index < $components ? 0 : ord($previous[$index - $components]);
+                $upperLeft = $index < $stride ? 0 : ord($previous[$index - $stride]);
                 $predictor = match ($filter) {
                     0 => 0,
                     1 => $left,

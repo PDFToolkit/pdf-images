@@ -75,22 +75,28 @@ the converters have no singleton, global registry or page-building facade.
 
 ## Supported formats
 
-- Static, non-interlaced PNG with eight bits per component: greyscale, RGB,
-  palette, greyscale with alpha and RGBA. All five scanline filters are
-  reconstructed. Palettes are expanded to RGB; `tRNS` becomes an alpha mask.
+- Static PNG with every legal colour/depth combination: greyscale 1/2/4/8/16,
+  palette 1/2/4/8, and RGB, greyscale with alpha or RGBA 8/16 bits. Both
+  non-interlaced and Adam7 images reconstruct all five scanline filters.
+  Palettes expand to RGB; `tRNS` compares full-precision values and becomes
+  an alpha mask. Sixteen-bit colour and alpha stay sixteen-bit. Embedded
+  grayscale/RGB ICC profiles are bounded, structurally checked and retained
+  byte for byte in an explicit PDF ICCBased colour space.
 - Baseline or progressive Huffman DCT JPEG with eight bits per component:
   greyscale, RGB and Adobe CMYK with transform zero. Required tables, frames
   and markers are checked; the PDF viewer decodes the DCT coefficients.
 
-Animated or interlaced PNGs, other bit depths, embedded ICC profiles, YCCK JPEGs
-and ambiguous colour semantics are explicitly rejected. EXIF metadata does
+Animated PNGs, HDR colour metadata, JPEG ICC profiles, YCCK JPEGs and
+ambiguous colour semantics are explicitly rejected. EXIF metadata does
 not cause automatic rotation. PNG gamma or chromaticity information does not
 create a calibrated colour space.
 
 ## Checks and examples
 
 The suite verifies expected samples and alpha, preserved JPEG bytes, generated
-PDF streams, CRCs, truncation and dimension, chunk and decompression limits.
+PDF streams, CRCs, truncation and dimension, chunk, profile and cumulative decompression limits. The extended
+PNG corpus compares exact output samples and ICC bytes with pypdf, decodes with
+Pillow and ImageMagick/libpng, and checks rendered colour and opacity with Poppler.
 The [contracts and limits](docs/architecture.md) describe each object.
 
 The [complete example](examples/image-files.php) builds a page containing four

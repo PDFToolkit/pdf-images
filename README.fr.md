@@ -78,15 +78,19 @@ n'ont pas de singleton, de registre global ou de façade qui assemble une page.
 
 ## Formats pris en charge
 
-- PNG statique, non entrelacé, huit bits par composante : gris, RGB, palette,
-  gris avec alpha et RGBA. Les cinq filtres de scanline sont reconstruits.
-  Les palettes sont développées en RGB ; `tRNS` devient un masque alpha.
+- PNG statique avec toutes les combinaisons couleur/profondeur légales : gris
+  1/2/4/8/16, palette 1/2/4/8, RGB, gris avec alpha ou RGBA 8/16 bits. Les images
+  non entrelacées et Adam7 reconstruisent les cinq filtres de scanline.
+  Les palettes deviennent RGB ; `tRNS` compare la valeur complète et devient
+  un masque alpha. La couleur et l’alpha 16 bits conservent leur précision.
+  Les profils ICC gris/RGB sont bornés, contrôlés structurellement et conservés
+  octet pour octet dans un espace couleur PDF ICCBased explicite.
 - JPEG Huffman DCT, baseline ou progressif, huit bits par composante : gris,
   RGB et CMYK Adobe avec transformée zéro. Les tables, trames et marqueurs
   nécessaires sont contrôlés ; le lecteur PDF décode les coefficients DCT.
 
-Les PNG animés, entrelacés et d'autres profondeurs, les profils ICC intégrés,
-les JPEG YCCK et les sémantiques couleur ambiguës sont rejetés explicitement.
+Les PNG animés, les métadonnées couleur HDR, les profils ICC JPEG, les JPEG
+YCCK et les sémantiques couleur ambiguës sont rejetés explicitement.
 Les métadonnées EXIF ne produisent pas de rotation automatique. Les informations
 PNG de gamma ou de chromaticité ne créent pas d'espace couleur calibré.
 
@@ -94,7 +98,9 @@ PNG de gamma ou de chromaticité ne créent pas d'espace couleur calibré.
 
 La suite vérifie les échantillons et l'alpha attendus, la conservation des
 octets JPEG, les flux PDF obtenus, les CRC, les troncatures et les limites
-de dimensions, de chunks et de décompression.
+de dimensions, de chunks, de profils et de décompression cumulée. Le corpus PNG
+étendu compare les échantillons et profils ICC PDF exacts avec pypdf, décode avec
+Pillow et ImageMagick/libpng, puis vérifie le rendu couleur/alpha avec Poppler.
 Les [contrats et limites](docs/fr/architecture.md) détaillent chaque objet.
 
 [L'exemple complet](examples/image-files.php) construit une page avec quatre

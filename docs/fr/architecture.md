@@ -18,7 +18,7 @@ pas le writer. Il transforme des octets de formats externes en valeurs du core.
 | `PDF\Images\PngImageDecoder` | Vérifie la structure PNG et reconstruit couleurs et alpha ; retourne un `PDF\Document\Images\SampledImage`. |
 | `PDF\Images\PngChunk` | Valide le nom et le CRC d'un chunk. |
 | `PDF\Images\PngColorType` | Représente les codes couleur PNG, distincts des espaces de couleur PDF. |
-| `PDF\Images\PngScanlineDecoder` | Reconstruit les cinq filtres PNG sur des échantillons alignés sur l'octet. |
+| `PDF\Images\PngScanlineDecoder` | Reconstruit les cinq filtres PNG sur des octets, y compris les échantillons compactés et 16 bits. |
 
 Le résultat est ensuite donné à `PDF\Document\Images\ImageXObjectFactory`.
 Ce compositeur du core accepte aussi des échantillons ou des données DCT
@@ -58,3 +58,50 @@ d'images à une page. La ressource `/XObject`, la référence indirecte, la
 matrice de placement et l'opérateur `Do` restent des objets du core choisis
 par l'application. Le package est optionnel pour une génération à partir
 d'échantillons déjà disponibles.
+
+## Profondeurs PNG, Adam7 et profils ICC
+
+`PngHeader` valide les combinaisons du tableau 12 PNG : gris 1/2/4/8/16 bits,
+palette 1/2/4/8, RGB, gris+alpha et RGBA 8/16. `PngPasses` et `PngPass`
+décrivent les passes ; `PngRasterDecoder` applique indépendamment les cinq
+filtres à chaque passe Adam7 et replace les pixels dans les lignes finales.
+Une passe vide ne consomme aucun octet de filtre. `PngRaster` conserve les
+échantillons complets, y compris les valeurs 16 bits en ordre réseau.
+`PngScanlineDecoder` accepte un quatrième argument de profondeur optionnel
+(8 par défaut), sans casser ses appels existants.
+
+`PngSampleConverter` développe les palettes en RGB 8 bits, sépare couleur et
+alpha et conserve la précision 16 bits des canaux natifs. Une clé `tRNS`
+compare tous les bits des échantillons avant de créer un masque d’opacité
+8 bits. Le gris compacté conserve sa profondeur.
+
+`PngProfileReader` et `ImageIccProfile` bornent la décompression iCCP, vérifient
+le nom, l’en-tête, la compatibilité gris/RGB et les limites des tags, puis
+conservent les octets exacts via `ICCProfile`/`ICCBased` du core. L’évaluation
+des transformations couleur appartient au lecteur PDF ; ces vérifications
+structurelles ne prétendent pas valider toute la sémantique ICC.
+
+Les paramètres supplémentaires de `ImageImportLimits` sont
+`maxCumulativeDecodedBytes` (64 Mio), `maxProfileBytes` (4 Mio) et
+`maxProfileTags` (4096). `ImageImportBudget` est créé pour chaque conversion ;
+profil décompressé, données filtrées, copies de passes, reconstruction et
+échantillons retournés consomment le même budget. `ImageDataInflater` traite
+des fragments compressés de 64 octets et refuse troncature, données finales
+supplémentaires et dépassement. Couleur et alpha retournés doivent aussi
+respecter ensemble `maxDecodedBytes`. Ces plafonds précèdent les allocations ;
+ils ne garantissent pas la mémoire totale du processus. L’application garde
+ses budgets de requête et de nombre d’images.
+
+Références : [PNG troisième édition](https://www.w3.org/TR/2025/REC-png-3-20250624/),
+sections 8.1, 9, 11.2.1 (tableau 12), 11.3.1.1 et 11.3.2.3 ; source conservée
+`ISO_32000-2_sponsored_EC3.pdf`, pages physiques 206–208 et 273–276 pour ICC et
+les images PDF. Animation, métadonnées HDR et calibration gamma/chromaticité
+restent des capacités distinctes. EXIF ne provoque aucune rotation.
+
+`tools/validate_png.py` vérifie 35 fixtures originales avec pypdf, Pillow,
+ImageMagick/libpng et Poppler : échantillons et profils PDF exacts, puis
+rendu au centre des pixels avec une tolérance de trois niveaux 8 bits par
+canal pour l’arrondi et la gestion des couleurs indépendants. Pillow seul
+ne conserve pas toutes les conversions de clés de transparence non 8 bits ;
+ImageMagick/libpng vérifie donc indépendamment tous les échantillons couleur
+et opacité en sortie 16 bits.
