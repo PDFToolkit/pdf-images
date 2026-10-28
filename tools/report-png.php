@@ -32,7 +32,7 @@ $destination = $argv[1] ?? throw new InvalidArgumentException('An output directo
 if (!is_dir($destination) && !mkdir($destination, 0777, true)) {
     throw new RuntimeException('Could not create the fixture export directory.');
 }
-$fixtures = dirname(__DIR__) . '/tests/Fixtures/png';
+$fixtures = $argv[2] ?? dirname(__DIR__) . '/tests/Fixtures/png';
 $manifest = json_decode(file_get_contents($fixtures . '/manifest.json'), true, flags: JSON_THROW_ON_ERROR);
 $records = [];
 foreach ($manifest['cases'] as $name => $expected) {
@@ -52,6 +52,8 @@ foreach ($manifest['cases'] as $name => $expected) {
         ->writeTo($destination . '/' . $name . '.pdf');
     $space = $image->samples->layout->colorSpace;
     $records[$name] = [
+        'family' => $image->samples->layout->space()->family()->value,
+        'intent' => $image->intent?->value,
         'samples' => base64_encode($image->samples->bytes),
         'alpha' => $image->alpha === null ? null : base64_encode($image->alpha->bytes),
         'colorDepth' => $image->samples->layout->bitsPerComponent,

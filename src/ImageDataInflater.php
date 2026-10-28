@@ -7,7 +7,7 @@ namespace PDF\Images;
 /** Bounded zlib for image samples and ICC profiles; all output consumes the same import budget. */
 final readonly class ImageDataInflater
 {
-    public function decode(string $compressed, int $maximumBytes, ImageImportBudget $budget, ?int $exactBytes = null): string
+    public function decode(string $compressed, int $maximumBytes, ImageImportBudget $budget, ?int $exactBytes = null, bool $allowTrailing = false): string
     {
         $context = @inflate_init(ZLIB_ENCODING_DEFLATE);
         if ($context === false) {
@@ -23,7 +23,7 @@ final readonly class ImageDataInflater
             $budget->reserve(strlen($part));
             $decoded .= $part;
             if (inflate_get_status($context) === ZLIB_STREAM_END) {
-                if (inflate_get_read_len($context) !== $length) {
+                if (!$allowTrailing && inflate_get_read_len($context) !== $length) {
                     throw new \InvalidArgumentException('Image contains trailing compressed data.');
                 }
                 break;

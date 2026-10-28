@@ -30,7 +30,9 @@ produits autrement. Il n'inspecte ni signature PNG ni marqueur JPEG.
    contrôlés avant interprétation.
 2. L'en-tête est confronté aux limites avant allocation des scanlines.
 3. L'inflation zlib consomme des fragments comprimés de 64 octets et rejette
-   les données dépassant la taille attendue, tronquées ou suivies de données.
+   les données dépassant la taille décodée attendue ou tronquées. Les octets
+   encodés inutilisés après le dernier flux zlib IDAT sont ignorés comme le
+   permet PNG ; les données finales supplémentaires iCCP restent invalides.
 4. Les filtres sont inversés, puis les indices de palette développés et les
    échantillons alpha séparés.
 5. Le core reçoit les échantillons et choisit leur encodage PDF avec FlateDecode.
@@ -93,7 +95,8 @@ Une passe vide ne consomme aucun octet de filtre. `PngRaster` conserve les
 
 `PngSampleConverter` développe les palettes en RGB 8 bits, sépare couleur et
 alpha et conserve la précision 16 bits des canaux natifs. Une clé `tRNS`
-compare tous les bits des échantillons avant de créer un masque d’opacité
+masque les bits hauts inutilisés, puis compare tous les bits des échantillons
+avant de créer un masque d’opacité
 8 bits. Le gris compacté conserve sa profondeur.
 
 `PngProfileReader` et `ImageIccProfile` bornent la décompression iCCP, vérifient
@@ -107,8 +110,9 @@ Les paramètres supplémentaires de `ImageImportLimits` sont
 `maxProfileTags` (4096). `ImageImportBudget` est créé pour chaque conversion ;
 profil décompressé, données filtrées, copies de passes, reconstruction et
 échantillons retournés consomment le même budget. `ImageDataInflater` traite
-des fragments compressés de 64 octets et refuse troncature, données finales
-supplémentaires et dépassement. Couleur et alpha retournés doivent aussi
+des fragments compressés de 64 octets et refuse troncature et dépassement.
+Seuls les octets encodés inutilisés après le dernier flux IDAT sont ignorés ;
+un profil iCCP doit consommer exactement ses données comprimées. Couleur et alpha retournés doivent aussi
 respecter ensemble `maxDecodedBytes`. Ces plafonds précèdent les allocations ;
 ils ne garantissent pas la mémoire totale du processus. L’application garde
 ses budgets de requête et de nombre d’images.
@@ -116,8 +120,10 @@ ses budgets de requête et de nombre d’images.
 Références : [PNG troisième édition](https://www.w3.org/TR/2025/REC-png-3-20250624/),
 sections 8.1, 9, 11.2.1 (tableau 12), 11.3.1.1 et 11.3.2.3 ; source conservée
 `ISO_32000-2_sponsored_EC3.pdf`, pages physiques 206–208 et 273–276 pour ICC et
-les images PDF. Animation, métadonnées HDR et calibration gamma/chromaticité
-restent des capacités distinctes. EXIF ne provoque aucune rotation.
+les images PDF. La [politique couleur PNG](png-colour.md) couvre la calibration
+gAMA/cHRM et les profils sRGB exacts, avec priorité des déclarations et intention
+de rendu. Animation et métadonnées HDR restent non prises en charge. EXIF ne
+provoque aucune rotation.
 
 `tools/validate_png.py` vérifie 35 fixtures originales avec pypdf, Pillow,
 ImageMagick/libpng et Poppler : échantillons et profils PDF exacts, puis

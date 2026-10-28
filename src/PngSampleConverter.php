@@ -8,6 +8,8 @@ use PDF\Document\Images\DeviceColorSpace;
 use PDF\Document\Images\ImageSamples;
 use PDF\Document\Images\SampledImage;
 use PDF\Document\Images\SampleLayout;
+use PDF\Graphics\ColourSpaces\ColourSpace;
+use PDF\Graphics\GraphicsState\RenderingIntent;
 
 /** Preserves sample precision; indexed colour expands to RGB and opacity is unassociated. */
 final readonly class PngSampleConverter
@@ -16,11 +18,11 @@ final readonly class PngSampleConverter
     {
     }
 
-    public function convert(PngRaster $raster, ?string $palette, ?string $transparency, ?ImageIccProfile $profile, ImageImportBudget $budget): SampledImage
+    public function convert(PngRaster $raster, ?string $palette, ?string $transparency, ?ImageIccProfile $profile, ImageImportBudget $budget, ?ColourSpace $colorSpace = null, ?RenderingIntent $intent = null): SampledImage
     {
         $header = $raster->header;
         $type = $header->colorType;
-        $space = $profile?->colorSpace() ?? $type->colorSpace();
+        $space = $colorSpace ?? $profile?->colorSpace() ?? $type->colorSpace();
         $depth = $type === PngColorType::Indexed ? 8 : $header->depth;
         $intrinsicAlpha = $type === PngColorType::GrayAlpha || $type === PngColorType::RGBA;
         $hasAlpha = $intrinsicAlpha || $transparency !== null;
@@ -32,7 +34,7 @@ final readonly class PngSampleConverter
         }
         $budget->reserve($colorBytes + $alphaBytes);
         if (!$hasAlpha && $type !== PngColorType::Indexed) {
-            return new SampledImage(new ImageSamples($header->dimensions, new SampleLayout($space, $depth), $raster->bytes));
+            return new SampledImage(new ImageSamples($header->dimensions, new SampleLayout($space, $depth), $raster->bytes), intent: $intent);
         }
         $colors = $intrinsicAlpha || $type === PngColorType::Indexed ? '' : $raster->bytes;
         $alpha = '';
@@ -55,7 +57,7 @@ final readonly class PngSampleConverter
                 } elseif ($transparency !== null) {
                     $transparent = true;
                     for ($component = 0; $component < $type->components(); ++$component) {
-                        $value = ord($transparency[$component * 2]) * 256 + ord($transparency[$component * 2 + 1]);
+                        $value = (ord($transparency[$component * 2]) * 256 + ord($transparency[$component * 2 + 1])) & ((1 << $header->depth) - 1);
                         $transparent = $transparent && $raster->sample($x, $y, $component) === $value;
                     }
                     $alpha .= $transparent ? "\0" : "\xff";
@@ -65,6 +67,7 @@ final readonly class PngSampleConverter
         return new SampledImage(
             new ImageSamples($header->dimensions, new SampleLayout($space, $depth), $colors),
             $hasAlpha ? new ImageSamples($header->dimensions, new SampleLayout(DeviceColorSpace::Gray, $alphaDepth), $alpha) : null,
+            intent: $intent,
         );
     }
 }

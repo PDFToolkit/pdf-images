@@ -34,12 +34,15 @@ It does not inspect PNG signatures or JPEG markers.
    interpretation.
 2. The header is checked against the limits before scanlines are allocated.
 3. zlib inflation consumes 64-byte compressed fragments and rejects data that
-   exceeds the expected size, is truncated or has trailing data.
+   exceeds the expected decoded size or is truncated. Unused encoded bytes after
+   the final IDAT zlib stream are ignored as PNG permits; iCCP trailing data
+   remains invalid.
 4. Filters are reversed independently for each Adam7 pass before scattering
    pixels into row-padded output. Empty passes contain no filter byte. Packed
    grayscale retains its depth; indexed samples expand to eight-bit RGB.
    Sixteen-bit colour and intrinsic alpha stay sixteen-bit, in network order.
-5. Transparency keys compare every original sample bit before producing an
+5. Transparency keys mask unused high bits, then compare every original
+   sample bit before producing an
    eight-bit opacity mask. An ICC profile remains unchanged in an explicit
    ICCBased space with a matching component count.
 6. The core receives the samples and selects their PDF encoding with FlateDecode.
@@ -58,8 +61,9 @@ sections 8.1, 9, 11.2.1 (table 12), 11.3.1.1 and 11.3.2.3. PDF image precision
 and ICC embedding follow the retained `ISO_32000-2_sponsored_EC3.pdf`, physical
 pages 206–208 and 273–276. ICC checks cover framing, component compatibility
 and bounded tag extents; colour-transform evaluation belongs to the PDF viewer.
-Animation, HDR colour metadata and gamma/chromaticity calibration remain
-separate capabilities. EXIF does not rotate imported samples.
+The [PNG colour policy](png-colour.md) covers gAMA/cHRM calibration and exact
+sRGB profiles, including declaration priority and rendering intent. Animation
+and HDR colour metadata remain unsupported. EXIF does not rotate imported samples.
 
 `tools/validate_png.py` verifies 35 original fixtures with pypdf, Pillow,
 ImageMagick/libpng and Poppler. The PDF sample/profile bytes must match exactly;

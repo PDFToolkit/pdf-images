@@ -81,7 +81,10 @@ the converters have no singleton, global registry or page-building facade.
   Palettes expand to RGB; `tRNS` compares full-precision values and becomes
   an alpha mask. Sixteen-bit colour and alpha stay sixteen-bit. Embedded
   grayscale/RGB ICC profiles are bounded, structurally checked and retained
-  byte for byte in an explicit PDF ICCBased colour space.
+  byte for byte in an explicit PDF ICCBased colour space. `gAMA`/`cHRM`
+  produce calibrated PDF spaces; `sRGB` uses an exact piecewise transfer
+  curve and retains its rendering intent. [Colour policy](docs/png-colour.md)
+  describes precedence and explicit defaults for incomplete metadata.
 - Baseline or progressive Huffman DCT JPEG with eight bits per component:
   greyscale, RGB, Adobe CMYK and YCCK. Gray/RGB/CMYK ICC profiles are
   reassembled from APP2 parts and preserved exactly. Required tables, frames
@@ -89,8 +92,7 @@ the converters have no singleton, global registry or page-building facade.
 
 Animated PNGs, HDR colour metadata and
 ambiguous colour semantics are explicitly rejected. EXIF metadata does
-not cause automatic rotation. PNG gamma or chromaticity information does not
-create a calibrated colour space.
+not cause automatic rotation. Untagged PNG samples remain device-dependent.
 
 ## Checks and examples
 

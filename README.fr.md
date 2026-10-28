@@ -84,7 +84,10 @@ n'ont pas de singleton, de registre global ou de façade qui assemble une page.
   Les palettes deviennent RGB ; `tRNS` compare la valeur complète et devient
   un masque alpha. La couleur et l’alpha 16 bits conservent leur précision.
   Les profils ICC gris/RGB sont bornés, contrôlés structurellement et conservés
-  octet pour octet dans un espace couleur PDF ICCBased explicite.
+  octet pour octet dans un espace couleur PDF ICCBased explicite. `gAMA`/`cHRM`
+  produisent des espaces PDF calibrés ; `sRGB` utilise sa courbe exacte par
+  morceaux et conserve son intention de rendu. La [politique couleur](docs/fr/png-colour.md)
+  décrit les priorités et hypothèses explicites pour les métadonnées incomplètes.
 - JPEG Huffman DCT, baseline ou progressif, huit bits par composante : gris,
   RGB, CMYK Adobe et YCCK. Les profils ICC gris/RGB/CMYK sont réassemblés
   depuis les segments APP2 et conservés exactement. Les tables, trames et marqueurs
@@ -92,8 +95,8 @@ n'ont pas de singleton, de registre global ou de façade qui assemble une page.
 
 Les PNG animés, les métadonnées couleur HDR et les sémantiques couleur
 ambiguës sont rejetés explicitement.
-Les métadonnées EXIF ne produisent pas de rotation automatique. Les informations
-PNG de gamma ou de chromaticité ne créent pas d'espace couleur calibré.
+Les métadonnées EXIF ne produisent pas de rotation automatique. Les échantillons
+PNG sans déclaration couleur restent dépendants du périphérique.
 
 ## Contrôles et exemples
 

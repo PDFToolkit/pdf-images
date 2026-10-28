@@ -114,7 +114,6 @@ final class ImageImportTest extends TestCase
         yield 'reserved interlace' => [$test->pngHeader(1, 1, 2, 8, 2) . $data . $end];
         yield 'invalid colour depth' => [$test->pngHeader(1, 1, 2, 4) . $data . $end];
         yield 'non consecutive IDAT' => [$valid . $data . $test->chunk('tEXt', "k\0v") . $data . $end];
-        yield 'trailing zlib' => [$valid . $test->chunk('IDAT', gzcompress("\0\x11\x22\x33") . 'garbage') . $end];
         yield 'short scanlines' => [$valid . $test->chunk('IDAT', gzcompress("\0\x11\x22")) . $end];
         yield 'extra scanlines' => [$valid . $test->chunk('IDAT', gzcompress("\0\x11\x22\x33\x44")) . $end];
         yield 'invalid filter' => [$valid . $test->chunk('IDAT', gzcompress("\x05\x11\x22\x33")) . $end];

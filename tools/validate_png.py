@@ -83,10 +83,11 @@ def reference_image(path, record, samples, alpha):
     return color
 
 
-def libpng_samples(executable, path, samples, depth, alpha=False):
+def libpng_samples(executable, path, samples, depth, alpha=False, raw_color=False):
     channels=len(samples[0][0])
     width,height=len(samples[0]),len(samples)
-    command=[executable,str(path)]+(['-alpha','extract'] if alpha else ['-alpha','off'])
+    # Avoid ImageMagick's automatic linear-gray conversion when inspecting encoded values.
+    command=[executable,str(path)]+(['-set','colorspace','sRGB'] if raw_color else [])+(['-alpha','extract'] if alpha else ['-alpha','off'])
     command+=['-depth','16','-endian','MSB',('gray' if channels==1 else 'rgb')+':-']
     completed=subprocess.run(command,check=True,capture_output=True,timeout=30)
     body=completed.stdout

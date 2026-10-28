@@ -65,11 +65,10 @@ final class PngFormatsTest extends TestCase
         }
     }
 
-    public function testInvalidPaletteSizeAndHighTransparencyBitsAreRejected(): void
+    public function testInvalidPaletteSizeIsRejected(): void
     {
         $cases = [
             $this->header(1, 1, 3, 1) . $this->chunk('PLTE', str_repeat("\0", 9)),
-            $this->header(1, 1, 0, 2) . $this->chunk('tRNS', "\0\x04"),
         ];
         foreach ($cases as $prefix) {
             $this->reject($prefix . $this->chunk('IDAT', gzcompress("\0\0")) . $this->chunk('IEND', ''));
@@ -87,6 +86,7 @@ final class PngFormatsTest extends TestCase
             $header . $icc . $icc . $data . $end,
             $header . $data . $icc . $end,
             $header . $this->chunk('PLTE', "\0\0\0") . $icc . $data . $end,
+            $header . $this->chunk('iCCP', "profile\0\0" . gzcompress($profile) . 'unused bytes') . $data . $end,
             $this->header(1, 1, 0, 8) . $icc . $this->chunk('IDAT', gzcompress("\0\0")) . $end,
         ] as $png) {
             $this->reject($png);

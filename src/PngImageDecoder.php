@@ -12,6 +12,7 @@ final readonly class PngImageDecoder
     public function __construct(
         private ImageImportLimits $limits = new ImageImportLimits(),
         private PngScanlineDecoder $scanlines = new PngScanlineDecoder(),
+        private PngColorDefaults $colorDefaults = new PngColorDefaults(),
     ) {
     }
 
@@ -27,6 +28,7 @@ final readonly class PngImageDecoder
         $palette = null;
         $transparency = null;
         $profile = null;
+        $colorMetadata = new PngColorMetadata();
         $compressed = '';
         $seenData = false;
         $dataClosed = false;
@@ -68,6 +70,11 @@ final readonly class PngImageDecoder
                     }
                     $profile = (new PngProfileReader($this->limits))->read($chunk->data, $header, $budget);
                     break;
+                case 'gAMA':
+                case 'cHRM':
+                case 'sRGB':
+                    $colorMetadata->read($chunk, $palette !== null, $seenData);
+                    break;
                 case 'IDAT':
                     if ($header === null || $dataClosed || ($header->colorType === PngColorType::Indexed && $palette === null)) {
                         throw new \InvalidArgumentException('PNG IDAT chunks must be consecutive and follow the required palette.');
@@ -101,9 +108,10 @@ final readonly class PngImageDecoder
         if (!$finished || $header === null || $passes === null) {
             throw new \InvalidArgumentException('PNG image is incomplete.');
         }
-        $filtered = (new ImageDataInflater())->decode($compressed, $passes->filteredBytes, $budget, $passes->filteredBytes);
+        $filtered = (new ImageDataInflater())->decode($compressed, $passes->filteredBytes, $budget, $passes->filteredBytes, allowTrailing: true);
         $raster = (new PngRasterDecoder($this->scanlines))->decode($filtered, $header, $passes, $budget);
-        return (new PngSampleConverter($this->limits))->convert($raster, $palette, $transparency, $profile, $budget);
+        $colorSpace = $colorMetadata->colorSpace($header, $profile, $this->colorDefaults, $this->limits, $budget);
+        return (new PngSampleConverter($this->limits))->convert($raster, $palette, $transparency, $profile, $budget, $colorSpace, $colorMetadata->renderingIntent($profile));
     }
 
     /** @return \Generator<int, PngChunk> */
@@ -144,12 +152,7 @@ final readonly class PngImageDecoder
             if ($length !== $expected) {
                 throw new \InvalidArgumentException('Invalid PNG transparency sample count.');
             }
-            for ($offset = 0; $offset < $length; $offset += 2) {
-                $sample = ord($data[$offset]) * 256 + ord($data[$offset + 1]);
-                if ($sample >= (1 << $header->depth)) {
-                    throw new \InvalidArgumentException('PNG transparency sample exceeds the image sample depth.');
-                }
-            }
+
         } else {
             throw new \InvalidArgumentException('PNG alpha colour types cannot contain a transparency key.');
         }
