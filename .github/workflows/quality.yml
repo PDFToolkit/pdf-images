@@ -33,6 +33,10 @@ jobs:
       - run: composer check
       - run: python -m pip install --require-hashes -r tools/validation-requirements.txt
       - run: sudo apt-get update && sudo apt-get install -y qpdf poppler-utils imagemagick
+      - name: Build the pinned colour-rendering oracle
+        run: |
+          sudo apt-get install -y cmake ninja-build pkg-config libfreetype-dev libjpeg-dev libpng-dev liblcms2-dev libopenjp2-7-dev zlib1g-dev
+          python tools/build_poppler.py
       - name: Generate and validate the module example
         run: |
           mkdir -p /tmp/pdf-images-examples
@@ -41,8 +45,14 @@ jobs:
       - name: Verify PDF semantics with an independent reader
         run: python tools/validate_example.py /tmp/pdf-images-examples/image-files.pdf
       - name: Verify packed, sixteen-bit, Adam7 and ICC PNG conversion
-        run: python tools/validate_png.py --report /tmp/pdf-images-examples/png-validation.json
+        run: python tools/validate_png.py --pdftoppm _build/poppler/build/utils/pdftoppm --report /tmp/pdf-images-examples/png-validation.json
       - name: Verify PNG gamma, chromaticities and sRGB colour management
-        run: python tools/validate_png_color.py --report /tmp/pdf-images-examples/png-colour-validation.json
+        run: python tools/validate_png_color.py --pdftoppm _build/poppler/build/utils/pdftoppm --output /tmp/pdf-images-examples/png-colour --report /tmp/pdf-images-examples/png-colour-validation.json
       - name: Verify JPEG ICC profiles and Adobe CMYK/YCCK rendering
-        run: python tools/validate_jpeg.py --report /tmp/pdf-images-examples/jpeg-validation.json
+        run: python tools/validate_jpeg.py --pdftoppm _build/poppler/build/utils/pdftoppm --report /tmp/pdf-images-examples/jpeg-validation.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: image-validation-php-${{ matrix.php }}
+          path: /tmp/pdf-images-examples/
+          if-no-files-found: ignore

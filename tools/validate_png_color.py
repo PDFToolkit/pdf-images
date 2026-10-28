@@ -79,6 +79,9 @@ def validate(output, php, pdftoppm, qpdf, imagemagick):
     checks = []
     flags = ImageCms.Flags.NOOPTIMIZE | ImageCms.Flags.BLACKPOINTCOMPENSATION
     system_cms_version = ctypes.CDLL(ctypes.util.find_library('lcms2')).cmsGetEncodedCMMversion()
+    renderer_version = subprocess.run([pdftoppm, '-v'], check=True, capture_output=True, text=True, timeout=10)
+    renderer_version = (renderer_version.stdout + renderer_version.stderr).splitlines()[0]
+    (output / 'renderer.json').write_text(json.dumps({'renderer': renderer_version, 'systemLittleCmsVersion': system_cms_version}, indent=2) + '\n')
     for name, record in manifest['cases'].items():
         path = fixtures / (name + '.png')
         require(hashlib.sha256(path.read_bytes()).hexdigest() == record['sha256'], name + ': source hash')
@@ -139,7 +142,7 @@ def validate(output, php, pdftoppm, qpdf, imagemagick):
         difference = max(abs(a - b) for y in range(record['height']) for x in range(record['width']) for a, b in zip(rendered.getpixel((x * 10 + 5, y * 10 + 5)), reference.getpixel((x, y))))
         require(difference <= 3, name + f': rendered difference {difference} exceeds three levels per channel')
         checks.append({'case': name, 'family': record['family'], 'intent': record['intent'], 'samples': 'exact', 'inputProfile': 'exact' if record['profileSha256'] else None, 'maximumRenderChannelDifference': difference})
-    return {'schema': 1, 'cases': len(checks), 'pillowVersion': PIL.__version__, 'pillowLittleCmsVersion': ImageCms.core.littlecms_version, 'systemReferenceLittleCmsVersion': system_cms_version, 'referenceFlags': ['NOOPTIMIZE', 'BLACKPOINTCOMPENSATION'], 'renderPrecision': 'Poppler Splash uses the high eight bits of 16-bit samples before colour conversion; native and PDF full-precision samples are checked separately.', 'checksPerCase': ['source hash', 'exact native/PDF samples and opacity', 'qpdf structure', 'pypdf colour space and rendering intent', 'source ICC provenance or calibrated XYZ/gamma', 'Pillow/libpng source samples', 'independent LittleCMS profile rendering against Poppler'], 'checks': checks}
+    return {'schema': 1, 'cases': len(checks), 'renderer': renderer_version, 'pillowVersion': PIL.__version__, 'pillowLittleCmsVersion': ImageCms.core.littlecms_version, 'systemReferenceLittleCmsVersion': system_cms_version, 'referenceFlags': ['NOOPTIMIZE', 'BLACKPOINTCOMPENSATION'], 'renderPrecision': 'Poppler Splash uses the high eight bits of 16-bit samples before colour conversion; native and PDF full-precision samples are checked separately.', 'checksPerCase': ['source hash', 'exact native/PDF samples and opacity', 'qpdf structure', 'pypdf colour space and rendering intent', 'source ICC provenance or calibrated XYZ/gamma', 'Pillow/libpng source samples', 'independent LittleCMS profile rendering against Poppler'], 'checks': checks}
 
 
 def main():

@@ -84,8 +84,19 @@ The rendering reference uses the same input precision. Full 16-bit retention is
 proven separately by byte comparisons, not inferred from an eight-bit screen
 image. LittleCMS and Poppler are development oracles, not PHP dependencies.
 
+CI builds Poppler 26.10.0 from the SHA-256-pinned upstream archive with
+`tools/build_poppler.py`. Ubuntu 24.04's Poppler 24.02 produces tinted CalGray
+samples: the `gray-gamma-half` fixture differs from the independent LittleCMS
+reference by up to 20 levels. Upstream corrected CalGray white-point handling
+in [Poppler 26.02](https://poppler.freedesktop.org/releases/). The validation
+keeps its three-level limit and records the renderer version; it does not
+accept the older renderer's discrepancy. This build requires CMake, Ninja,
+a C++23 compiler and the FreeType, JPEG, PNG, LittleCMS, OpenJPEG and zlib
+development packages. It builds only the PDF image-rendering executable.
+
 ```sh
-python tools/validate_png_color.py --report _build/png-colour.json
+python tools/build_poppler.py
+python tools/validate_png_color.py --pdftoppm _build/poppler/build/utils/pdftoppm --report _build/png-colour.json
 ```
 
 See the [complete contracts and budgets](architecture.md).

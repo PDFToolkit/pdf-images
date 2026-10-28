@@ -90,8 +90,20 @@ complète des 16 bits est démontrée séparément par comparaison des octets, s
 la déduire d’une image écran 8 bits. LittleCMS et Poppler sont des oracles de
 développement, pas des dépendances PHP.
 
+La CI compile Poppler 26.10.0 depuis l’archive officielle dont le SHA-256 est
+fixé dans `tools/build_poppler.py`. Le Poppler 24.02 d’Ubuntu 24.04 colore les
+échantillons CalGray : le cas `gray-gamma-half` diffère de la référence
+indépendante LittleCMS de 20 niveaux au maximum. Le traitement du point blanc
+CalGray a été corrigé dans [Poppler 26.02](https://poppler.freedesktop.org/releases/).
+La validation conserve sa limite de trois niveaux et relève la version du
+moteur ; elle n’accepte pas l’écart de l’ancien moteur. Cette compilation
+nécessite CMake, Ninja, un compilateur C++23 et les paquets de développement
+FreeType, JPEG, PNG, LittleCMS, OpenJPEG et zlib. Elle ne construit que
+l’exécutable de rendu des images PDF.
+
 ```sh
-python tools/validate_png_color.py --report _build/png-colour.json
+python tools/build_poppler.py
+python tools/validate_png_color.py --pdftoppm _build/poppler/build/utils/pdftoppm --report _build/png-colour.json
 ```
 
 Consulter les [contrats et budgets complets](architecture.md).
