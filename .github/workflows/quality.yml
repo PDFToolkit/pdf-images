@@ -42,3 +42,5 @@ jobs:
         run: python tools/validate_example.py /tmp/pdf-images-examples/image-files.pdf
       - name: Verify packed, sixteen-bit, Adam7 and ICC PNG conversion
         run: python tools/validate_png.py --report /tmp/pdf-images-examples/png-validation.json
+      - name: Verify JPEG ICC profiles and Adobe CMYK/YCCK rendering
+        run: python tools/validate_jpeg.py --report /tmp/pdf-images-examples/jpeg-validation.json

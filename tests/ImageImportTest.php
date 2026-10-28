@@ -187,7 +187,7 @@ final class ImageImportTest extends TestCase
         $cmyk = $this->fixture('cmyk.jpg')->bytes;
         $adobe = strpos($cmyk, 'Adobe');
         self::assertIsInt($adobe);
-        $cmyk[$adobe + 11] = "\x02";
+        $cmyk[$adobe + 11] = "\x03";
         $cases = [substr($rgb, 0, -2), $rgb . 'trailing', "\xff\xd8\xff\xe0\xff\xffx", $cmyk];
         foreach ($cases as $bytes) {
             try {

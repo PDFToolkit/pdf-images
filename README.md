@@ -83,10 +83,11 @@ the converters have no singleton, global registry or page-building facade.
   grayscale/RGB ICC profiles are bounded, structurally checked and retained
   byte for byte in an explicit PDF ICCBased colour space.
 - Baseline or progressive Huffman DCT JPEG with eight bits per component:
-  greyscale, RGB and Adobe CMYK with transform zero. Required tables, frames
+  greyscale, RGB, Adobe CMYK and YCCK. Gray/RGB/CMYK ICC profiles are
+  reassembled from APP2 parts and preserved exactly. Required tables, frames
   and markers are checked; the PDF viewer decodes the DCT coefficients.
 
-Animated PNGs, HDR colour metadata, JPEG ICC profiles, YCCK JPEGs and
+Animated PNGs, HDR colour metadata and
 ambiguous colour semantics are explicitly rejected. EXIF metadata does
 not cause automatic rotation. PNG gamma or chromaticity information does not
 create a calibrated colour space.

@@ -73,7 +73,28 @@ checks all colour and opacity samples at sixteen-bit output precision.
 The reader preserves the original bytes. It checks segment bounds,
 quantisation and Huffman tables, components, scan parameters and the end-of-file
 marker. It determines PDF `/ColorSpace` and `/ColorTransform` parameters and,
-for inverted Adobe CMYK, `/Decode`.
+for inverted Adobe CMYK or YCCK, `/Decode`. Adobe transform 2 selects
+PDF `/ColorTransform 1` with four inverted component ranges; transform 0
+retains CMYK without a colour transform.
+
+`JpegProfileParts` assembles ICC APP2 chunks by sequence number, including
+physically shuffled chunks, with explicit profile and cumulative allocation
+bounds. Missing, duplicate or inconsistent chunks are rejected.
+`ImageIccProfile` checks Gray/RGB/CMYK compatibility and preserves every
+profile byte in an ICCBased space. Marker position does not replace sequence
+numbering: complete ICC chunks after a scan are accepted too.
+
+The contracts follow the retained `ISO_32000-2_sponsored_EC3.pdf`, physical
+pages 63–65, and [ICC.1:2004-04](https://www.color.org/ICC1V42old.pdf),
+Annex B.5, physical page 81. `tools/validate_jpeg.py` checks nine original
+baseline/progressive/CMYK/YCCK fixtures with qpdf, pypdf, Poppler and
+Pillow/LittleCMS. Encoded JPEG and ICC bytes are exact; every raster pixel
+must match an independently assembled pypdf document. Flat interior colours
+are also compared against independently decoded JPEG samples and LittleCMS
+with at most three eight-bit levels per channel. The oracle disables the
+approximate LittleCMS precalculated LUT and enables black-point compensation,
+matching Poppler settings. The synthetic CMYK profile is a test fixture,
+not a calibrated printer profile.
 
 It does not perform entropy decoding and therefore does not claim to validate
 every DCT coefficient. The PDF viewer's JPEG decoder remains responsible for

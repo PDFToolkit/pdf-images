@@ -24,6 +24,7 @@ final readonly class JpegImageReader
         if ($length < 4 || substr($bytes, 0, 2) !== "\xff\xd8") {
             throw new \InvalidArgumentException('Invalid JPEG start-of-image marker.');
         }
+        $profileParts = new JpegProfileParts($this->limits, new ImageImportBudget($this->limits));
         $frame = null;
         $adobeTransform = null;
         $jfif = false;
@@ -98,7 +99,7 @@ final readonly class JpegImageReader
                 }
                 $jfif = true;
             } elseif ($marker === 0xe2 && str_starts_with($payload, "ICC_PROFILE\0")) {
-                throw new \InvalidArgumentException('Embedded JPEG ICC profiles require an explicit ICCBased colour-space implementation.');
+                $profileParts->append($payload);
             } elseif (!(($marker >= 0xe0 && $marker <= 0xef) || $marker === 0xfe)) {
                 throw new \InvalidArgumentException('Unsupported JPEG segment marker.');
             }
@@ -106,7 +107,7 @@ final readonly class JpegImageReader
         if (!$finished || $frame === null) {
             throw new \InvalidArgumentException('JPEG image is incomplete.');
         }
-        return $this->image($file, $frame, $adobeTransform, $jfif);
+        return $this->image($file, $frame, $adobeTransform, $jfif, $profileParts->profile(count($frame->components)));
     }
 
     private function frame(string $payload, bool $progressive): JpegFrame
@@ -245,20 +246,20 @@ final readonly class JpegImageReader
         throw new \InvalidArgumentException('Truncated JPEG entropy-coded scan.');
     }
 
-    private function image(ImageFileBytes $file, JpegFrame $frame, ?int $adobeTransform, bool $jfif): DCTImage
+    private function image(ImageFileBytes $file, JpegFrame $frame, ?int $adobeTransform, bool $jfif, ?ImageIccProfile $profile): DCTImage
     {
         $count = count($frame->components);
         if ($count === 1) {
             if ($adobeTransform !== null && $adobeTransform !== 0) {
                 throw new \InvalidArgumentException('Unsupported grayscale Adobe JPEG colour transform.');
             }
-            return new DCTImage($file->bytes, $frame->dimensions, new SampleLayout(DeviceColorSpace::Gray), 0);
+            return new DCTImage($file->bytes, $frame->dimensions, new SampleLayout($profile?->colorSpace() ?? DeviceColorSpace::Gray), 0);
         }
         if ($count === 4) {
-            if ($adobeTransform !== 0 || $jfif) {
-                throw new \InvalidArgumentException('Four-component JPEG requires Adobe CMYK transform zero; YCCK is not supported.');
+            if (!in_array($adobeTransform, [0, 2], true) || $jfif) {
+                throw new \InvalidArgumentException('Four-component JPEG requires an unambiguous Adobe CMYK or YCCK marker.');
             }
-            return new DCTImage($file->bytes, $frame->dimensions, new SampleLayout(DeviceColorSpace::CMYK), 0, true);
+            return new DCTImage($file->bytes, $frame->dimensions, new SampleLayout($profile?->colorSpace() ?? DeviceColorSpace::CMYK), $adobeTransform === 2 ? 1 : 0, true);
         }
         $identifiers = array_map(static fn (JpegComponent $component): int => $component->identifier, $frame->components);
         if ($adobeTransform !== null && !in_array($adobeTransform, [0, 1], true)) {
@@ -272,6 +273,6 @@ final readonly class JpegImageReader
         if ($jfif && $transform !== 1) {
             throw new \InvalidArgumentException('Conflicting JFIF and Adobe JPEG colour transforms.');
         }
-        return new DCTImage($file->bytes, $frame->dimensions, new SampleLayout(DeviceColorSpace::RGB), $transform);
+        return new DCTImage($file->bytes, $frame->dimensions, new SampleLayout($profile?->colorSpace() ?? DeviceColorSpace::RGB), $transform);
     }
 }

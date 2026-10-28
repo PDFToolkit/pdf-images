@@ -86,11 +86,12 @@ n'ont pas de singleton, de registre global ou de façade qui assemble une page.
   Les profils ICC gris/RGB sont bornés, contrôlés structurellement et conservés
   octet pour octet dans un espace couleur PDF ICCBased explicite.
 - JPEG Huffman DCT, baseline ou progressif, huit bits par composante : gris,
-  RGB et CMYK Adobe avec transformée zéro. Les tables, trames et marqueurs
+  RGB, CMYK Adobe et YCCK. Les profils ICC gris/RGB/CMYK sont réassemblés
+  depuis les segments APP2 et conservés exactement. Les tables, trames et marqueurs
   nécessaires sont contrôlés ; le lecteur PDF décode les coefficients DCT.
 
-Les PNG animés, les métadonnées couleur HDR, les profils ICC JPEG, les JPEG
-YCCK et les sémantiques couleur ambiguës sont rejetés explicitement.
+Les PNG animés, les métadonnées couleur HDR et les sémantiques couleur
+ambiguës sont rejetés explicitement.
 Les métadonnées EXIF ne produisent pas de rotation automatique. Les informations
 PNG de gamma ou de chromaticité ne créent pas d'espace couleur calibré.
 

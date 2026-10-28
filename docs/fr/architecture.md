@@ -44,7 +44,28 @@ l'application fixe également ses budgets de requête et son nombre d'images.
 Le lecteur conserve les octets originaux. Il contrôle les bornes des segments,
 les tables de quantification et Huffman, les composantes, les paramètres de
 scan et la présence de la fin de fichier. Il détermine les paramètres PDF
-`/ColorSpace`, `/ColorTransform` et, pour le CMYK Adobe inversé, `/Decode`.
+`/ColorSpace`, `/ColorTransform` et, pour le CMYK Adobe ou YCCK inversé,
+`/Decode`. Le marqueur Adobe de transformée 2 produit `/ColorTransform 1`
+et quatre intervalles inversés ; la transformée 0 conserve le CMYK.
+
+`JpegProfileParts` réassemble les segments ICC APP2 par numéro, même dans
+un ordre physique différent, avec limites explicites de profil et de copies
+cumulées. Les segments manquants, répétés ou incohérents sont rejetés.
+`ImageIccProfile` contrôle la compatibilité gris/RGB/CMYK et conserve chaque
+octet dans un espace ICCBased. Un segment complet situé après un scan
+reste accepté : sa position ne remplace pas son numéro de séquence.
+
+Ces contrats suivent `ISO_32000-2_sponsored_EC3.pdf`, pages physiques 63–65,
+et [ICC.1:2004-04](https://www.color.org/ICC1V42old.pdf), annexe B.5,
+page physique 81. `tools/validate_jpeg.py` vérifie neuf images originales
+baseline/progressives/CMYK/YCCK avec qpdf, pypdf, Poppler et Pillow/LittleCMS.
+Les octets JPEG et ICC sont exacts ; tous les pixels doivent égaler ceux
+d’un PDF construit indépendamment avec pypdf. Les intérieurs uniformes
+sont aussi comparés aux échantillons JPEG décodés indépendamment et
+convertis par LittleCMS, avec au plus trois niveaux 8 bits par composante.
+L’oracle désactive la LUT précalculée approximative de LittleCMS et active
+la compensation du point noir, comme Poppler. Le profil CMYK synthétique
+est un vecteur de test, pas un profil d’imprimante calibrée.
 
 Il n'exécute pas le décodage entropique et ne prétend donc pas vérifier chaque
 coefficient DCT. Le décodeur JPEG du lecteur PDF reste responsable du rendu.
