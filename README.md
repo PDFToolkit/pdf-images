@@ -18,10 +18,10 @@ The package is available on
 application:
 
 ```sh
-composer require "pdftoolkit/pdf-images:^0.1"
+composer require "pdftoolkit/pdf-images:^0.2"
 ```
 
-The module uses `roukmoute/pdf:^0.2 || ^0.3 || ^0.4 || ^0.5 || ^0.6 || ^0.7 || ^0.8 || ^0.9 || ^0.10 || ^0.11 || ^0.12`, installed
+The module uses `roukmoute/pdf:^0.12`, installed
 automatically by Composer. PHP 8.3 or newer on a 64-bit platform and the `ctype`,
 `iconv` and `zlib` extensions are required for this combination. The application's
 `composer.lock` records the selected versions and revisions. Installing the
@@ -30,9 +30,10 @@ Shared documentation is available at [PDFToolkit](https://pdftoolkit.github.io/)
 The [image module documentation](https://pdftoolkit.github.io/modules/images/)
 contains its guides and API reference.
 
-The same converters are compatible with core 0.6, 0.7, 0.8, 0.9 and 0.10. PNG/JPEG conversion
-keeps its existing scope. Selecting the output version and supplying PDF 2.0
-metadata, tagging or security objects belong to the core writer.
+Version 0.2 requires core 0.12 to retain PNG rendering intents and JPEG CMYK
+ICC colour spaces. Selecting the PDF output version and supplying metadata,
+tagging or security objects belong to the core writer. Applications retaining
+an earlier core can stay on Images 0.1.
 
 ## Explicit construction
 

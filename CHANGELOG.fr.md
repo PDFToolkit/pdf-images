@@ -4,6 +4,15 @@
 
 ## Unreleased
 
+## 0.2.0 - 2026-10-28
+
+- Décoder tous les types de couleur PNG statiques à leurs profondeurs compactées, 8 et 16 bits autorisées, dont Adam7, transparence de palette et plans alpha séparés, avec allocations bornées et conservation exacte des échantillons.
+- Conserver profils ICC et espaces calibrés gAMA/cHRM des PNG. Utiliser des profils sRGB avec fonction par morceaux exacte et conserver l’intention de rendu sRGB ; priorité iCCP, puis sRGB, puis gAMA/cHRM, avec défauts documentés seulement pour les métadonnées absentes.
+- Réassembler les profils ICC JPEG multiparties et préserver l’interprétation Adobe CMYK/YCCK sans modifier les octets JPEG encodés.
+- Corriger les bits hauts inutilisés de tRNS et les octets de fin autorisés du flux IDAT compressé PNG.
+- Exiger le core publié 0.12 pour les intentions de rendu et les images DCT ICC inversées à quatre composantes ; PHP reste 8.3+ sur plateforme 64 bits.
+- Ajouter contrôles indépendants Pillow, libpng, LittleCMS, ImageMagick, pypdf et Poppler, fixtures reproductibles, provenance des sources et guides FR/EN. PNG animé et métadonnées HDR non implémentées restent explicitement non pris en charge.
+
 ## 0.1.13 - 2026-10-28
 
 - Accepter le core stable `^0.12` avec les séries précédemment prises en charge.

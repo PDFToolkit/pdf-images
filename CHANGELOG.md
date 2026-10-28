@@ -4,6 +4,15 @@ English | [Français](CHANGELOG.fr.md)
 
 ## Unreleased
 
+## 0.2.0 - 2026-10-28
+
+- Decode all static PNG colour types at their legal packed, 8-bit and 16-bit depths, including Adam7, palette transparency and separated alpha planes, with bounded allocations and exact sample preservation.
+- Preserve PNG ICC profiles and calibrated gAMA/cHRM colour spaces. Use exact piecewise sRGB profiles and retain the sRGB rendering intent; precedence is iCCP, then sRGB, then gAMA/cHRM, with documented defaults only for absent metadata.
+- Reassemble multipart JPEG ICC profiles and preserve Adobe CMYK/YCCK interpretation without changing the encoded JPEG bytes.
+- Correct PNG tRNS unused high-bit handling and permitted trailing compressed IDAT bytes.
+- Require published core 0.12 for image rendering intents and inverted four-component ICC DCT images; PHP remains 8.3+ on 64-bit platforms.
+- Add independent Pillow, libpng, LittleCMS, ImageMagick, pypdf and Poppler checks, reproducible fixtures, source provenance and English/French guides. Animated PNG and unimplemented HDR metadata remain explicit unsupported mechanisms.
+
 ## 0.1.13 - 2026-10-28
 
 - Accept stable core `^0.12` alongside previously supported series.
