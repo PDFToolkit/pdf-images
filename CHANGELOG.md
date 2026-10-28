@@ -4,6 +4,12 @@ English | [Français](CHANGELOG.fr.md)
 
 ## Unreleased
 
+## 0.1.13 - 2026-10-28
+
+- Accept stable core `^0.12` alongside previously supported series.
+- Keep the converter API unchanged and validation locked to published dependencies. Verify the existing converter against the core 0.12 candidate separately on PHP 8.3, 8.4 and 8.5.
+- This maintenance release enables stable development dependencies for the core before the independent Images 0.2 feature release.
+
 ## 0.1.12 - 2026-10-15
 
 - Accept stable core `^0.11` alongside the previous supported series.
