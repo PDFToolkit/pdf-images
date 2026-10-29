@@ -4,6 +4,11 @@ English | [Français](CHANGELOG.fr.md)
 
 ## Unreleased
 
+## 0.2.1 - 2026-10-29
+
+- Align English and French architecture-guide sections so the documentation site can pair translated headings. Integrate the French PNG depth, Adam7, ICC and allocation-budget descriptions into PNG processing and complete its object responsibility table.
+- Document the 0.2 series' stable core `^0.12` requirement and preserve the complete parser contracts, limits, oracle precision and backwards-compatible `PngScanlineDecoder` argument details in both languages. This documentation release leaves code, dependency constraints and the validation lock unchanged.
+
 ## 0.2.0 - 2026-10-28
 
 - Decode all static PNG colour types at their legal packed, 8-bit and 16-bit depths, including Adam7, palette transparency and separated alpha planes, with bounded allocations and exact sample preservation.

@@ -2,9 +2,10 @@
 
 English | [Français](fr/architecture.md)
 
-Version 0.1.8 accepts core 0.7 alongside earlier supported releases. PNG/JPEG
-conversion remains separate from PDF 2.0 metadata, tagging and cryptographic
-mechanisms, which the application composes using core objects.
+The 0.2 series requires stable core `roukmoute/pdf:^0.12` for image rendering
+intents and inverted four-component ICC DCT images. PNG/JPEG conversion remains
+separate from PDF 2.0 metadata, tagging and cryptographic mechanisms, which the
+application composes using core objects.
 
 The package adds no PDF structures and does not modify the writer. It
 converts bytes from external formats into core values.
@@ -30,6 +31,11 @@ It does not inspect PNG signatures or JPEG markers.
 
 ## PNG processing
 
+`PngHeader` validates the combinations in PNG table 12: grayscale at 1/2/4/8/16
+bits, indexed colour at 1/2/4/8 bits, and RGB, grayscale+alpha and RGBA at 8/16
+bits. `PngScanlineDecoder` accepts an optional fourth bit-depth argument
+(8 by default), preserving existing calls.
+
 1. The signature, chunk order and sizes, and every CRC are checked before
    interpretation.
 2. The header is checked against the limits before scanlines are allocated.
@@ -41,15 +47,17 @@ It does not inspect PNG signatures or JPEG markers.
    pixels into row-padded output. Empty passes contain no filter byte. Packed
    grayscale retains its depth; indexed samples expand to eight-bit RGB.
    Sixteen-bit colour and intrinsic alpha stay sixteen-bit, in network order.
-5. Transparency keys mask unused high bits, then compare every original
-   sample bit before producing an
-   eight-bit opacity mask. An ICC profile remains unchanged in an explicit
-   ICCBased space with a matching component count.
+5. Transparency keys (`tRNS`) mask unused high bits, then compare every original
+   sample bit before producing an eight-bit opacity mask. An ICC profile
+   remains unchanged in an explicit ICCBased space with a matching component
+   count.
 6. The core receives the samples and selects their PDF encoding with FlateDecode.
 
 Default limits are 16 MiB encoded, 16 MiB decoded, 4,194,304 pixels, 32,768
-pixels per dimension and 65,536 chunks. Additional defaults are 64 MiB of
-cumulative decoded-buffer allocations, 4 MiB per ICC profile and 4,096 ICC tags.
+pixels per dimension and 65,536 chunks. Additional defaults in
+`ImageImportLimits` are `maxCumulativeDecodedBytes` (64 MiB of cumulative
+decoded-buffer allocations), `maxProfileBytes` (4 MiB per ICC profile) and
+`maxProfileTags` (4,096 ICC tags).
 The profile, filtered pass slices, reconstruction buffers and final colour/alpha
 share one `ImageImportBudget` created per decode call. The combined returned
 colour and alpha also fit `maxDecodedBytes`. Limits are checked before
@@ -60,7 +68,8 @@ PNG rules follow [PNG Third Edition](https://www.w3.org/TR/2025/REC-png-3-202506
 sections 8.1, 9, 11.2.1 (table 12), 11.3.1.1 and 11.3.2.3. PDF image precision
 and ICC embedding follow the retained `ISO_32000-2_sponsored_EC3.pdf`, physical
 pages 206–208 and 273–276. ICC checks cover framing, component compatibility
-and bounded tag extents; colour-transform evaluation belongs to the PDF viewer.
+and bounded tag extents, not all ICC semantics; colour-transform evaluation
+belongs to the PDF viewer.
 The [PNG colour policy](png-colour.md) covers gAMA/cHRM calibration and exact
 sRGB profiles, including declaration priority and rendering intent. Animation
 and HDR colour metadata remain unsupported. EXIF does not rotate imported samples.

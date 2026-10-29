@@ -2,9 +2,10 @@
 
 [English](../architecture.md) | Français
 
-La version 0.1.8 accepte le core 0.7 en plus des versions antérieures prises en
-charge. La conversion PNG/JPEG reste distincte des métadonnées, du balisage et
-des mécanismes cryptographiques PDF 2.0, composés à l’aide des objets du core.
+La série 0.2 exige le core stable `roukmoute/pdf:^0.12` pour les intentions de
+rendu des images et les images DCT ICC inversées à quatre composantes. La
+conversion PNG/JPEG reste distincte des métadonnées, du balisage et des
+mécanismes cryptographiques PDF 2.0, composés à l’aide des objets du core.
 
 Le package ne représente aucune structure PDF supplémentaire et ne modifie
 pas le writer. Il transforme des octets de formats externes en valeurs du core.
@@ -19,12 +20,21 @@ pas le writer. Il transforme des octets de formats externes en valeurs du core.
 | `PDF\Images\PngChunk` | Valide le nom et le CRC d'un chunk. |
 | `PDF\Images\PngColorType` | Représente les codes couleur PNG, distincts des espaces de couleur PDF. |
 | `PDF\Images\PngScanlineDecoder` | Reconstruit les cinq filtres PNG sur des octets, y compris les échantillons compactés et 16 bits. |
+| `PngHeader`, `PngPasses`, `PngPass`, `PngRasterDecoder`, `PngRaster` | Valident les combinaisons couleur/profondeur autorisées et reconstruisent les lignes non entrelacées ou Adam7 sans réduire la précision. |
+| `PngSampleConverter` | Sépare couleur et alpha, développe les palettes et compare les clés de transparence à leur précision complète. |
+| `PngProfileReader`, `ImageIccProfile` | Bornent la décompression ICC, vérifient le nom, l’en-tête, les limites des tags et la compatibilité couleur, puis conservent les octets du profil via `ICCProfile`/`ICCBased` du core. |
+| `ImageImportBudget`, `ImageDataInflater` | Cumulent les coûts des tampons décodés pour l’inflation du profil et de l’image, les passes et les échantillons retournés. |
 
 Le résultat est ensuite donné à `PDF\Document\Images\ImageXObjectFactory`.
 Ce compositeur du core accepte aussi des échantillons ou des données DCT
 produits autrement. Il n'inspecte ni signature PNG ni marqueur JPEG.
 
 ## Traitement PNG
+
+`PngHeader` valide les combinaisons du tableau 12 PNG : gris 1/2/4/8/16 bits,
+palette 1/2/4/8 bits, RGB, gris+alpha et RGBA 8/16 bits. `PngScanlineDecoder`
+accepte un quatrième argument de profondeur optionnel (8 par défaut), sans
+casser ses appels existants.
 
 1. La signature, l'ordre et les tailles des chunks ainsi que chaque CRC sont
    contrôlés avant interprétation.
@@ -33,13 +43,47 @@ produits autrement. Il n'inspecte ni signature PNG ni marqueur JPEG.
    les données dépassant la taille décodée attendue ou tronquées. Les octets
    encodés inutilisés après le dernier flux zlib IDAT sont ignorés comme le
    permet PNG ; les données finales supplémentaires iCCP restent invalides.
-4. Les filtres sont inversés, puis les indices de palette développés et les
-   échantillons alpha séparés.
-5. Le core reçoit les échantillons et choisit leur encodage PDF avec FlateDecode.
+4. Les filtres sont inversés indépendamment pour chaque passe Adam7, puis les
+   pixels replacés dans les lignes finales avec bourrage en fin de ligne. Une
+   passe vide ne consomme aucun octet de filtre. Le gris compacté conserve sa
+   profondeur ; les indices de palette sont développés en RGB 8 bits. Couleur
+   et alpha natifs 16 bits restent en 16 bits, en ordre réseau.
+5. Les clés de transparence (`tRNS`) masquent les bits hauts inutilisés, puis
+   comparent tous les bits de chaque échantillon original avant de créer un masque
+   d’opacité 8 bits. Un profil ICC reste inchangé dans un espace ICCBased
+   explicite dont le nombre de composantes correspond.
+6. Le core reçoit les échantillons et choisit leur encodage PDF avec FlateDecode.
 
-Les limites par défaut sont 16 MiB encodés, 16 MiB décodés, 4 194 304 pixels,
-32 768 pixels par dimension et 65 536 chunks. Elles sont des limites par image ;
-l'application fixe également ses budgets de requête et son nombre d'images.
+Les limites par défaut sont 16 Mio encodés, 16 Mio décodés, 4 194 304 pixels,
+32 768 pixels par dimension et 65 536 chunks. Les limites supplémentaires de
+`ImageImportLimits` sont `maxCumulativeDecodedBytes` (64 Mio d’allocations
+cumulées de tampons décodés), `maxProfileBytes` (4 Mio par profil ICC) et
+`maxProfileTags` (4 096 tags ICC). Profil décompressé, copies des passes
+filtrées, tampons de reconstruction et échantillons couleur/alpha retournés
+partagent un seul `ImageImportBudget`, créé pour chaque appel de décodage.
+Couleur et alpha retournés doivent aussi respecter ensemble `maxDecodedBytes`.
+Ces plafonds sont vérifiés avant allocation et réinitialisés pour l’appel
+suivant ; ils ne garantissent pas la mémoire totale du processus.
+L’application garde ses budgets de requête et de nombre d’images.
+
+Les règles PNG suivent [PNG troisième édition](https://www.w3.org/TR/2025/REC-png-3-20250624/),
+sections 8.1, 9, 11.2.1 (tableau 12), 11.3.1.1 et 11.3.2.3. La précision des
+images PDF et l’incorporation ICC suivent la source conservée
+`ISO_32000-2_sponsored_EC3.pdf`, pages physiques 206–208 et 273–276. Les contrôles
+ICC portent sur la structure, la compatibilité des composantes et les limites
+des tags, pas sur toute la sémantique ICC ; l’évaluation des transformations
+couleur appartient au lecteur PDF. La [politique couleur PNG](png-colour.md)
+couvre la calibration gAMA/cHRM et les profils sRGB exacts, avec priorité des
+déclarations et intention de rendu. Animation et métadonnées HDR restent non
+prises en charge. EXIF ne provoque aucune rotation.
+
+`tools/validate_png.py` vérifie 35 fixtures originales avec pypdf, Pillow,
+ImageMagick/libpng et Poppler. Échantillons et profils PDF doivent être exacts ;
+le rendu au centre des pixels admet au plus trois niveaux 8 bits par canal
+pour l’arrondi et la gestion des couleurs indépendants. Pillow seul ne
+conserve pas toutes les conversions de clés de transparence non 8 bits ;
+ImageMagick/libpng vérifie donc indépendamment tous les échantillons couleur
+et opacité en sortie 16 bits.
 
 ## Traitement JPEG
 
@@ -81,54 +125,3 @@ d'images à une page. La ressource `/XObject`, la référence indirecte, la
 matrice de placement et l'opérateur `Do` restent des objets du core choisis
 par l'application. Le package est optionnel pour une génération à partir
 d'échantillons déjà disponibles.
-
-## Profondeurs PNG, Adam7 et profils ICC
-
-`PngHeader` valide les combinaisons du tableau 12 PNG : gris 1/2/4/8/16 bits,
-palette 1/2/4/8, RGB, gris+alpha et RGBA 8/16. `PngPasses` et `PngPass`
-décrivent les passes ; `PngRasterDecoder` applique indépendamment les cinq
-filtres à chaque passe Adam7 et replace les pixels dans les lignes finales.
-Une passe vide ne consomme aucun octet de filtre. `PngRaster` conserve les
-échantillons complets, y compris les valeurs 16 bits en ordre réseau.
-`PngScanlineDecoder` accepte un quatrième argument de profondeur optionnel
-(8 par défaut), sans casser ses appels existants.
-
-`PngSampleConverter` développe les palettes en RGB 8 bits, sépare couleur et
-alpha et conserve la précision 16 bits des canaux natifs. Une clé `tRNS`
-masque les bits hauts inutilisés, puis compare tous les bits des échantillons
-avant de créer un masque d’opacité
-8 bits. Le gris compacté conserve sa profondeur.
-
-`PngProfileReader` et `ImageIccProfile` bornent la décompression iCCP, vérifient
-le nom, l’en-tête, la compatibilité gris/RGB et les limites des tags, puis
-conservent les octets exacts via `ICCProfile`/`ICCBased` du core. L’évaluation
-des transformations couleur appartient au lecteur PDF ; ces vérifications
-structurelles ne prétendent pas valider toute la sémantique ICC.
-
-Les paramètres supplémentaires de `ImageImportLimits` sont
-`maxCumulativeDecodedBytes` (64 Mio), `maxProfileBytes` (4 Mio) et
-`maxProfileTags` (4096). `ImageImportBudget` est créé pour chaque conversion ;
-profil décompressé, données filtrées, copies de passes, reconstruction et
-échantillons retournés consomment le même budget. `ImageDataInflater` traite
-des fragments compressés de 64 octets et refuse troncature et dépassement.
-Seuls les octets encodés inutilisés après le dernier flux IDAT sont ignorés ;
-un profil iCCP doit consommer exactement ses données comprimées. Couleur et alpha retournés doivent aussi
-respecter ensemble `maxDecodedBytes`. Ces plafonds précèdent les allocations ;
-ils ne garantissent pas la mémoire totale du processus. L’application garde
-ses budgets de requête et de nombre d’images.
-
-Références : [PNG troisième édition](https://www.w3.org/TR/2025/REC-png-3-20250624/),
-sections 8.1, 9, 11.2.1 (tableau 12), 11.3.1.1 et 11.3.2.3 ; source conservée
-`ISO_32000-2_sponsored_EC3.pdf`, pages physiques 206–208 et 273–276 pour ICC et
-les images PDF. La [politique couleur PNG](png-colour.md) couvre la calibration
-gAMA/cHRM et les profils sRGB exacts, avec priorité des déclarations et intention
-de rendu. Animation et métadonnées HDR restent non prises en charge. EXIF ne
-provoque aucune rotation.
-
-`tools/validate_png.py` vérifie 35 fixtures originales avec pypdf, Pillow,
-ImageMagick/libpng et Poppler : échantillons et profils PDF exacts, puis
-rendu au centre des pixels avec une tolérance de trois niveaux 8 bits par
-canal pour l’arrondi et la gestion des couleurs indépendants. Pillow seul
-ne conserve pas toutes les conversions de clés de transparence non 8 bits ;
-ImageMagick/libpng vérifie donc indépendamment tous les échantillons couleur
-et opacité en sortie 16 bits.

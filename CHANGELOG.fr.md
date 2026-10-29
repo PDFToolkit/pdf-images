@@ -4,6 +4,11 @@
 
 ## Unreleased
 
+## 0.2.1 - 2026-10-29
+
+- Aligner les sections du guide d’architecture français et anglais pour que le site puisse associer les titres traduits. Intégrer les descriptions françaises des profondeurs PNG, d’Adam7, des profils ICC et des budgets d’allocation au traitement PNG, puis compléter le tableau des responsabilités des objets.
+- Documenter l’exigence du core stable `^0.12` pour la série 0.2 et conserver dans les deux langues les contrats d’analyse, limites, précisions des oracles et détails de l’argument rétrocompatible de `PngScanlineDecoder`. Cette publication documentaire conserve code, contraintes de dépendances et verrou de validation.
+
 ## 0.2.0 - 2026-10-28
 
 - Décoder tous les types de couleur PNG statiques à leurs profondeurs compactées, 8 et 16 bits autorisées, dont Adam7, transparence de palette et plans alpha séparés, avec allocations bornées et conservation exacte des échantillons.
